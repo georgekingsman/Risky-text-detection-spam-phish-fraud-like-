@@ -1,0 +1,9 @@
+# Ignore dataset and large model artifacts
+dataset/
+models/*.joblib
+models/*.pt
+models/*.bin
+.env
+__pycache__/
+*.pyc
+.DS_Store

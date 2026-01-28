@@ -1,0 +1,10 @@
+pandas>=2.0
+numpy>=1.24
+scikit-learn>=1.3
+tqdm>=4.66
+joblib>=1.3
+python-dotenv>=1.0
+
+transformers>=4.40
+sentence-transformers>=2.6
+torch>=2.1
