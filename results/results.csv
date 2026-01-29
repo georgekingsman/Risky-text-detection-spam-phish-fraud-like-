@@ -20,3 +20,5 @@ spamassassin,test,sms_trained_minilm_lr,,0.15472779369627507,0.5510204081632653,
 sms_uci,test,spamassassin_trained_tfidf_word_lr,,0.28402366863905326,0.18250950570342206,0.64,0.6225258799171842,cross-domain: train=spamassassin test=sms_uci
 sms_uci,test,spamassassin_trained_tfidf_char_svm,,0.22356495468277945,0.14453125,0.49333333333333335,0.5191166321601105,cross-domain: train=spamassassin test=sms_uci
 sms_uci,test,spamassassin_trained_minilm_lr,,0.1346153846153846,0.08211143695014662,0.37333333333333335,0.3148102139406487,cross-domain: train=spamassassin test=sms_uci
+sms_uci,test,llm_zeroshot,,0.23008849557522124,0.13,1.0,0.5,limit=200
+spamassassin,test,llm_zeroshot,,0.04081632653061224,0.3333333333333333,0.021739130434782608,0.49235104669887286,limit=100

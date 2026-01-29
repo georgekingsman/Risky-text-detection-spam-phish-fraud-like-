@@ -84,6 +84,11 @@ def llm_zero_shot(texts: List[str], labels: List[str] = ['spam', 'ham'], few_sho
         "Return only the label: spam or ham.\n\nMessage:\n"
     )
 
+    pipe = None
+    if prov == 'local' and model:
+        from transformers import pipeline
+        pipe = pipeline('text-generation', model=model)
+
     for i, t in enumerate(texts[:limit]):
         prompt = base_prompt + t
         if few_shot:
@@ -95,15 +100,15 @@ def llm_zero_shot(texts: List[str], labels: List[str] = ['spam', 'ham'], few_sho
         elif prov == 'hf' and model:
             candidate = _call_hf_inference(prompt, model=model)
         elif prov == 'local' and model:
-            from transformers import pipeline
             # use text-generation locally so prompts can instruct the model
-            pipe = pipeline('text-generation', model=model)
-            outp = pipe(prompt, max_length=32)
+            outp = pipe(prompt, max_new_tokens=16)
             # transformers returns list of dicts for text2text
             if isinstance(outp, list):
                 candidate = outp[0].get('generated_text', '') or outp[0].get('text', '')
             else:
                 candidate = str(outp)
+            if candidate.startswith(prompt):
+                candidate = candidate[len(prompt):]
         else:
             raise RuntimeError('No LLM provider configured (set OPENAI_API_KEY, HF_API_KEY, or LLM_LOCAL_MODEL)')
 
@@ -132,6 +137,12 @@ def llm_extract_reasons(texts: List[str], provider: Optional[str] = None, model:
         "List up to 5 short keywords or brief reasons why the following message may be risky (spam/phish/fraud)."
         " Respond with a short comma-separated list.\n\nMessage:\n"
     )
+    pipe = None
+    if prov == 'local' and model:
+        from transformers import pipeline
+        # use text-generation for decoder-only models (distilgpt2, GPT-2, etc.)
+        pipe = pipeline('text-generation', model=model)
+
     for t in texts[:limit]:
         prompt = prompt_template + t
         if prov == 'openai':
@@ -139,14 +150,13 @@ def llm_extract_reasons(texts: List[str], provider: Optional[str] = None, model:
         elif prov == 'hf' and model:
             candidate = _call_hf_inference(prompt, model=model)
         elif prov == 'local' and model:
-            from transformers import pipeline
-            # use text-generation for decoder-only models (distilgpt2, GPT-2, etc.)
-            pipe = pipeline('text-generation', model=model)
-            res = pipe(prompt, max_length=64)
+            res = pipe(prompt, max_new_tokens=32)
             if isinstance(res, list) and res:
                 candidate = res[0].get('generated_text', '') or res[0].get('text', '')
             else:
                 candidate = str(res)
+            if candidate.startswith(prompt):
+                candidate = candidate[len(prompt):]
         else:
             raise RuntimeError('No LLM provider configured (set OPENAI_API_KEY, HF_API_KEY, or LLM_LOCAL_MODEL)')
         out.append(candidate.strip())
