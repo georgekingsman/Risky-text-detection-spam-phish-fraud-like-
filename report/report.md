@@ -49,7 +49,7 @@ We evaluate cross-domain transfer in both directions:
 The cross-domain summary is documented in [results/robustness_cross_domain.md](results/robustness_cross_domain.md). Key observation: **F1 drops substantially under domain shift**, with character n-grams retaining comparatively better performance than word TF-IDF in SMS → SpamAssassin transfer.
 
 ## 7. Robustness under perturbations
-We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table is in [results/robustness.csv](results/robustness.csv).
+We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table (SMS + SpamAssassin) is in [results/robustness.csv](results/robustness.csv).
 
 Findings:
 - Character n-grams are most resilient to obfuscation (smallest ΔF1).
