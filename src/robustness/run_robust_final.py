@@ -27,6 +27,8 @@ def apply_perturbation(func, texts, seed=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--seed', type=int, default=42)
+    ap.add_argument('--dataset', default='sms_uci', help='Dataset name (sms_uci or spamassassin)')
+    ap.add_argument('--data-dir', default=None, help='Override processed dataset directory')
     ap.add_argument('--out', default='results/robustness.csv')
     args = ap.parse_args()
 
@@ -40,21 +42,31 @@ def main():
         from sklearn.metrics import f1_score, precision_score, recall_score
         from sentence_transformers import SentenceTransformer
 
-        te = pd.read_csv('dataset/processed/test.csv')
+        if args.data_dir:
+            data_dir = args.data_dir
+        else:
+            if args.dataset == 'spamassassin':
+                data_dir = 'dataset/spamassassin/processed'
+            else:
+                data_dir = 'dataset/processed'
+
+        te = pd.read_csv(os.path.join(data_dir, 'test.csv'))
         texts = te['text'].tolist()
         labels = te['label'].values
 
         rows = []
-        embed_cache = None
-
         for p in sorted(glob.glob('models/*.joblib')):
             name = os.path.basename(p)
             m = joblib.load(p)
             # eval clean
-            if isinstance(m, dict) and 'clf' in m:
+            if isinstance(m, dict) and 'tfidf' in m and 'clf' in m:
+                vec = m['tfidf']
+                X = vec.transform(texts)
+                preds = m['clf'].predict(X)
+            elif isinstance(m, dict) and 'embed_model' in m and 'clf' in m:
                 model_name = m.get('embed_model')
-                embed_cache = {'name': model_name, 'model': SentenceTransformer(model_name)}
-                X = embed_cache['model'].encode(texts, batch_size=64, show_progress_bar=False, normalize_embeddings=True)
+                embed_model = SentenceTransformer(model_name)
+                X = embed_model.encode(texts, batch_size=64, show_progress_bar=False, normalize_embeddings=True)
                 X = np.asarray(X, dtype=np.float32)
                 preds = m['clf'].predict(X)
             else:
@@ -63,24 +75,40 @@ def main():
             f1 = f1_score(labels, preds)
             prec = precision_score(labels, preds)
             rec = recall_score(labels, preds)
-            rows.append({'model': name, 'perturbation': 'clean', 'f1': f1, 'precision': prec, 'recall': rec, 'delta_f1': 0.0})
+            f1_clean = f1
+            rows.append({
+                'attack': 'clean',
+                'dataset': args.dataset,
+                'model': name,
+                'f1_clean': f1_clean,
+                'f1_attacked': f1_clean,
+                'delta_f1': 0.0
+            })
 
             # perturbs
             for pert_name, func in PERTS.items():
-                if isinstance(m, dict) and 'clf' in m:
-                    # use embed_cache
-                    Xp = embed_cache['model'].encode(apply_perturbation(func, texts, seed=args.seed), batch_size=64, show_progress_bar=False, normalize_embeddings=True)
+                if isinstance(m, dict) and 'tfidf' in m and 'clf' in m:
+                    Xp = m['tfidf'].transform(apply_perturbation(func, texts, seed=args.seed))
+                    ppreds = m['clf'].predict(Xp)
+                elif isinstance(m, dict) and 'embed_model' in m and 'clf' in m:
+                    embed_model = SentenceTransformer(m.get('embed_model'))
+                    Xp = embed_model.encode(apply_perturbation(func, texts, seed=args.seed), batch_size=64, show_progress_bar=False, normalize_embeddings=True)
                     Xp = np.asarray(Xp, dtype=np.float32)
                     ppreds = m['clf'].predict(Xp)
                 else:
                     ppreds = m.predict(apply_perturbation(func, texts, seed=args.seed))
                 pf1 = f1_score(labels, ppreds)
-                pprec = precision_score(labels, ppreds)
-                prec_recall = recall_score(labels, ppreds)
-                rows.append({'model': name, 'perturbation': pert_name, 'f1': pf1, 'precision': pprec, 'recall': prec_recall, 'delta_f1': pf1 - f1})
+                rows.append({
+                    'attack': pert_name,
+                    'dataset': args.dataset,
+                    'model': name,
+                    'f1_clean': f1_clean,
+                    'f1_attacked': pf1,
+                    'delta_f1': pf1 - f1_clean
+                })
 
     # write CSV (outside suppressed block)
-    keys = ['model', 'perturbation', 'f1', 'precision', 'recall', 'delta_f1']
+    keys = ['attack', 'dataset', 'model', 'f1_clean', 'f1_attacked', 'delta_f1']
     tmp = args.out + '.tmp'
     with open(tmp, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=keys)
