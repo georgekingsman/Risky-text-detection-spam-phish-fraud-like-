@@ -56,6 +56,9 @@ Findings:
 - Word TF-IDF suffers larger drops under obfuscation and paraphrase-like perturbations.
 - MiniLM shows moderate robustness, especially on paraphrase-like changes.
 
+### 7.1 Normalization defense (CPU-only)
+We add a lightweight normalization defense (Unicode normalization, lowercasing, common obfuscation replacements, punctuation/space cleanup) and re-run robustness. The defense reduces the drop for obfuscation on word-based models, indicating that simple preprocessing can mitigate common evasion patterns. Results are included in [results/robustness.csv](results/robustness.csv) with `attack` suffix `+normalize`.
+
 ## 8. LLM zero-shot baseline
 We run local zero-shot LLM classification with rationales:
 - SMS test (limit=200) and SpamAssassin test (limit=100)
@@ -64,12 +67,12 @@ We run local zero-shot LLM classification with rationales:
 Results are appended to [results/results.csv](results/results.csv). As expected for a small local model, F1 is low but provides useful interpretability signals for failure analysis.
 
 ## 9. Failure mode analysis
-We curated 10 error cases from LLM zero-shot outputs in [results/cases.md](results/cases.md). Common failure patterns include:
-- Over-triggering on informal or playful language
-- Poor handling of long, structured email-style messages
-- Prompt-echo artifacts in rationale outputs
+We curated a taxonomy of 12 cases that compare model predictions before and after perturbations in [results/cases.md](results/cases.md). Each case includes original/perturbed text, predictions for word-TFIDF and char-TFIDF, and a failure tag (obfuscation, paraphrase shift, or prompt injection).
 
-These failure modes motivate future work on domain-adaptive prompting or larger instruction-tuned models.
+Key patterns:
+- Word TF-IDF is more sensitive to spacing/symbol obfuscation.
+- Character n-grams are comparatively stable under obfuscation but can be affected by paraphrase substitutions.
+- Prompt-injection style prefixes can flip decisions for one model while leaving another stable.
 
 ## 10. Reproducibility
 Key scripts:
