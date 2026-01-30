@@ -92,6 +92,7 @@ def main():
                 'attack': 'clean',
                 'dataset': args.dataset,
                 'model': name,
+                'defense': args.defense if args.defense != 'none' else 'none',
                 'f1_clean': f1_clean,
                 'f1_attacked': f1_clean,
                 'delta_f1': 0.0
@@ -113,13 +114,11 @@ def main():
                 else:
                     ppreds = m.predict(pert_texts)
                 pf1 = f1_score(labels, ppreds)
-                attack_name = pert_name
-                if args.defense != 'none':
-                    attack_name = f"{pert_name}+{args.defense}"
                 rows.append({
-                    'attack': attack_name,
+                    'attack': pert_name,
                     'dataset': args.dataset,
                     'model': name,
+                    'defense': args.defense if args.defense != 'none' else 'none',
                     'f1_clean': f1_clean,
                     'f1_attacked': pf1,
                     'delta_f1': pf1 - f1_clean
@@ -147,6 +146,7 @@ def main():
                     'attack': 'clean',
                     'dataset': args.dataset,
                     'model': name,
+                    'defense': 'none',
                     'f1_clean': bf1,
                     'f1_attacked': bf1,
                     'delta_f1': 0.0
@@ -168,13 +168,14 @@ def main():
                         'attack': pert_name,
                         'dataset': args.dataset,
                         'model': name,
+                        'defense': 'none',
                         'f1_clean': bf1,
                         'f1_attacked': bpf1,
                         'delta_f1': bpf1 - bf1
                     })
 
     # write CSV (outside suppressed block)
-    keys = ['attack', 'dataset', 'model', 'f1_clean', 'f1_attacked', 'delta_f1']
+    keys = ['attack', 'dataset', 'model', 'defense', 'f1_clean', 'f1_attacked', 'delta_f1']
     tmp = args.out + '.tmp'
     with open(tmp, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=keys)

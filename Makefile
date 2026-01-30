@@ -26,7 +26,10 @@ eval:
 	$(PY) -m src.build_results
 
 robust:
-	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci --out results/robustness.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci --defense normalize --include-baseline --out results/robustness_sms.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin --data-dir dataset/spamassassin/processed --defense normalize --include-baseline --out results/robustness_spamassassin.csv
+	$(PY) -m src.merge_robustness
+	$(PY) -m src.plot_robustness_delta
 
 robust_spamassassin:
 	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin --out results/robustness_spamassassin.csv

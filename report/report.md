@@ -57,7 +57,9 @@ Findings:
 - MiniLM shows moderate robustness, especially on paraphrase-like changes.
 
 ### 7.1 Normalization defense (CPU-only)
-We add a lightweight normalization defense (Unicode normalization, lowercasing, common obfuscation replacements, punctuation/space cleanup) and re-run robustness. The defense reduces the drop for obfuscation on word-based models, indicating that simple preprocessing can mitigate common evasion patterns. Results are included in [results/robustness.csv](results/robustness.csv) with `attack` suffix `+normalize`.
+We add a lightweight normalization defense (Unicode normalization, lowercasing, common obfuscation replacements, punctuation/space cleanup) and re-run robustness on both datasets. The defense reduces the drop for obfuscation on word-based models, indicating that simple preprocessing can mitigate common evasion patterns. Results are included in [results/robustness.csv](results/robustness.csv) with `defense=normalize` and a paired `defense=none` baseline.
+
+![Robustness delta](report/fig_robustness_delta.png)
 
 ## 8. LLM zero-shot baseline
 We run local zero-shot LLM classification with rationales:
