@@ -61,6 +61,9 @@ We add a lightweight normalization defense (Unicode normalization, lowercasing, 
 
 ![Robustness delta](report/fig_robustness_delta.png)
 
+### 7.2 Multi-seed stability
+We run robustness under 5 seeds (0–4) and aggregate mean±std in [results/robustness_agg.csv](results/robustness_agg.csv). Key conclusions (most robust model, defense impact, and worst attack type) remain stable across seeds.
+
 ## 8. LLM zero-shot baseline
 We run local zero-shot LLM classification with rationales:
 - SMS test (limit=200) and SpamAssassin test (limit=100)

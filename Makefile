@@ -31,6 +31,10 @@ robust:
 	$(PY) -m src.merge_robustness
 	$(PY) -m src.plot_robustness_delta
 
+robust_seeds:
+	$(PY) -m src.run_robustness_seeds
+	$(PY) -m src.aggregate_robustness
+
 robust_spamassassin:
 	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin --out results/robustness_spamassassin.csv
 
