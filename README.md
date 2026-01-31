@@ -25,4 +25,9 @@ make all
 make llm
 ```
 
+## Optional adversarial baseline (TextAttack, CPU)
+```bash
+make textattack
+```
+
 See [Makefile](Makefile) for all targets.

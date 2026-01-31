@@ -64,6 +64,17 @@ We add a lightweight normalization defense (Unicode normalization, lowercasing, 
 ### 7.2 Multi-seed stability
 We run robustness under 5 seeds (0–4) and aggregate mean±std in [results/robustness_agg.csv](results/robustness_agg.csv). Key conclusions (most robust model, defense impact, and worst attack type) remain stable across seeds.
 
+### 7.3 Adversarial baseline (TextAttack)
+We run a CPU-only TextAttack baseline using DeepWordBug on 200 sampled test messages per dataset. Results are saved in:
+- [results/textattack_sms.csv](results/textattack_sms.csv)
+- [results/textattack_spamassassin.csv](results/textattack_spamassassin.csv)
+
+Highlights:
+- SMS (TF-IDF word LR): F1 drops from 0.9615 to 0.0000 on the attacked sample; success rate 0.155.
+- SpamAssassin (TF-IDF word LR): F1 drops from 0.1508 to 0.0101; success rate 0.140.
+
+These results are sample-based and should be interpreted as a lightweight adversarial sanity check rather than a full-scale attack evaluation.
+
 ## 8. LLM zero-shot baseline
 We run local zero-shot LLM classification with rationales:
 - SMS test (limit=200) and SpamAssassin test (limit=100)
