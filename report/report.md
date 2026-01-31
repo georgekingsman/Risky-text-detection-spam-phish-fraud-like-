@@ -48,6 +48,8 @@ We evaluate cross-domain transfer in both directions:
 
 The cross-domain summary is documented in [results/robustness_cross_domain.md](results/robustness_cross_domain.md). Key observation: **F1 drops substantially under domain shift**, with character n-grams retaining comparatively better performance than word TF-IDF in SMS → SpamAssassin transfer.
 
+We also provide a compact cross-domain table for paper-ready reporting in [results/cross_domain_table.csv](results/cross_domain_table.csv).
+
 ## 7. Robustness under perturbations
 We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table (SMS + SpamAssassin) is in [results/robustness.csv](results/robustness.csv).
 
@@ -79,6 +81,10 @@ Highlights:
 
 These results are sample-based and should be interpreted as a lightweight adversarial sanity check rather than a full-scale attack evaluation.
 
+We further repeat the 200-sample evaluation across multiple seeds (0,1,2) and aggregate mean±std in:
+- [results/textattack_seeds/textattack_sms_agg.csv](results/textattack_seeds/textattack_sms_agg.csv)
+- [results/textattack_seeds/textattack_spamassassin_agg.csv](results/textattack_seeds/textattack_spamassassin_agg.csv)
+
 ## 8. LLM zero-shot baseline
 We run local zero-shot LLM classification with rationales:
 - SMS test (limit=200) and SpamAssassin test (limit=100)
@@ -102,6 +108,10 @@ Key scripts:
 - LLM zero-shot: [src/llm_zero_shot_rationale.py](src/llm_zero_shot_rationale.py)
 
 A unified results table is maintained in [results/results.csv](results/results.csv).
+
+Data QA checks (exact-duplicate rates within splits and across splits) are recorded in [results/duplicate_check.csv](results/duplicate_check.csv).
+
+Clean performance vs. normalization defense trade-off is summarized in [results/defense_tradeoff.csv](results/defense_tradeoff.csv).
 
 ## 11. Limitations and next steps
 - LLM baselines are limited by local model capacity; larger instruction-tuned models should improve accuracy and rationale quality.

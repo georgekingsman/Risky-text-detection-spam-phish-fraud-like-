@@ -1,0 +1,2 @@
+dataset,model,attack,n_samples,n_seeds,success_rate_mean,success_rate_std,f1_clean_mean,f1_clean_std,f1_attacked_mean,f1_attacked_std,delta_f1_mean,delta_f1_std,notes
+spamassassin,spamassassin_tfidf_word_lr.joblib,deepwordbug,200,3,0.09333333333333334,0.006236095644623235,0.1221,0.004692547282660029,0.016633333333333333,0.012436594746508744,-0.1055,0.00983293784515425,textattack_seeds

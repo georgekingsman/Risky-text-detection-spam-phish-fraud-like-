@@ -137,34 +137,32 @@ def run_attack(model, tokenizer, texts, labels, attack_name, seed, examples_out=
     return perturbed_texts, statuses, success_rate
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", default="sms_uci", choices=["sms_uci", "spamassassin"])
-    ap.add_argument("--data-dir", default=None)
-    ap.add_argument("--model-glob", default=None, help="Optional glob override for model selection")
-    ap.add_argument("--n-samples", type=int, default=200)
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--attack", default="deepwordbug", choices=["deepwordbug"])
-    ap.add_argument("--out", default="results/textattack.csv")
-    ap.add_argument("--examples-out", default="results/textattack_examples.jsonl")
-    ap.add_argument("--max-examples", type=int, default=50)
-    args = ap.parse_args()
-
-    if args.data_dir:
-        data_dir = args.data_dir
+def run_textattack(
+    dataset="sms_uci",
+    data_dir=None,
+    model_glob=None,
+    n_samples=200,
+    seed=42,
+    attack="deepwordbug",
+    out="results/textattack.csv",
+    examples_out="results/textattack_examples.jsonl",
+    max_examples=50,
+):
+    if data_dir:
+        data_dir = data_dir
     else:
-        data_dir = "dataset/spamassassin/processed" if args.dataset == "spamassassin" else "dataset/processed"
+        data_dir = "dataset/spamassassin/processed" if dataset == "spamassassin" else "dataset/processed"
 
     df = load_split(data_dir)
-    sample_df = stratified_sample(df, args.n_samples, args.seed)
+    sample_df = stratified_sample(df, n_samples, seed)
 
     texts = sample_df["text"].tolist()
     labels = sample_df["label"].astype(int).tolist()
 
-    if args.model_glob:
-        model_paths = sorted(Path(".").glob(args.model_glob))
+    if model_glob:
+        model_paths = sorted(Path(".").glob(model_glob))
     else:
-        if args.dataset == "sms_uci":
+        if dataset == "sms_uci":
             model_paths = [Path("models/tfidf_word_lr.joblib")]
             if Path("models/tfidf_llm_lr.joblib").exists():
                 model_paths.append(Path("models/tfidf_llm_lr.joblib"))
@@ -175,7 +173,7 @@ def main():
     if not model_paths:
         raise SystemExit("No eligible models found. Train baselines or pass --model-glob.")
 
-    os.makedirs(Path(args.out).parent, exist_ok=True)
+    os.makedirs(Path(out).parent, exist_ok=True)
     rows = []
 
     for model_path in model_paths:
@@ -186,34 +184,32 @@ def main():
         tokenizer = bundle["tokenizer"]
         clf = bundle["clf"]
 
-        # clean predictions
         clean_preds = predict_labels(model, texts)
         clean_f1 = f1_score(labels, clean_preds)
 
-        # attack
-        examples_out = args.examples_out
-        if examples_out:
-            stem = Path(examples_out).stem
-            examples_out = str(Path(examples_out).with_name(f"{stem}_{model_path.stem}.jsonl"))
+        examples_out_i = examples_out
+        if examples_out_i:
+            stem = Path(examples_out_i).stem
+            examples_out_i = str(Path(examples_out_i).with_name(f"{stem}_{model_path.stem}.jsonl"))
 
         pert_texts, statuses, success_rate = run_attack(
             clf,
             tokenizer,
             texts,
             labels,
-            attack_name=args.attack,
-            seed=args.seed,
-            examples_out=examples_out,
-            max_examples=args.max_examples,
+            attack_name=attack,
+            seed=seed,
+            examples_out=examples_out_i,
+            max_examples=max_examples,
         )
 
         adv_preds = predict_labels(model, pert_texts)
         adv_f1 = f1_score(labels, adv_preds)
 
         rows.append({
-            "dataset": args.dataset,
+            "dataset": dataset,
             "model": model_path.name,
-            "attack": args.attack,
+            "attack": attack,
             "n_samples": len(texts),
             "success_rate": round(success_rate, 4),
             "f1_clean": round(clean_f1, 4),
@@ -222,7 +218,7 @@ def main():
             "notes": "textattack",
         })
 
-    with open(args.out, "w", newline="") as f:
+    with open(out, "w", newline="") as f:
         writer = csv.DictWriter(
             f,
             fieldnames=[
@@ -240,7 +236,34 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Wrote {args.out}")
+    print(f"Wrote {out}")
+    return rows
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dataset", default="sms_uci", choices=["sms_uci", "spamassassin"])
+    ap.add_argument("--data-dir", default=None)
+    ap.add_argument("--model-glob", default=None, help="Optional glob override for model selection")
+    ap.add_argument("--n-samples", type=int, default=200)
+    ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--attack", default="deepwordbug", choices=["deepwordbug"])
+    ap.add_argument("--out", default="results/textattack.csv")
+    ap.add_argument("--examples-out", default="results/textattack_examples.jsonl")
+    ap.add_argument("--max-examples", type=int, default=50)
+    args = ap.parse_args()
+
+    run_textattack(
+        dataset=args.dataset,
+        data_dir=args.data_dir,
+        model_glob=args.model_glob,
+        n_samples=args.n_samples,
+        seed=args.seed,
+        attack=args.attack,
+        out=args.out,
+        examples_out=args.examples_out,
+        max_examples=args.max_examples,
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,2 @@
+dataset,model,attack,n_samples,success_rate,f1_clean,f1_attacked,delta_f1,notes
+spamassassin,spamassassin_tfidf_word_lr.joblib,deepwordbug,200,0.095,0.1287,0.0299,-0.0989,textattack

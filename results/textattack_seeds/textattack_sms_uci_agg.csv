@@ -1,0 +1,3 @@
+dataset,model,attack,n_samples,n_seeds,success_rate_mean,success_rate_std,f1_clean_mean,f1_clean_std,f1_attacked_mean,f1_attacked_std,delta_f1_mean,delta_f1_std,notes
+sms_uci,tfidf_llm_lr.joblib,deepwordbug,200,3,0.1366666666666667,0.0062360956446232295,0.92,0.0,0.0,0.0,-0.92,0.0,textattack_seeds
+sms_uci,tfidf_word_lr.joblib,deepwordbug,200,3,0.13,0.004082482904638634,0.92,0.0,0.0,0.0,-0.92,0.0,textattack_seeds

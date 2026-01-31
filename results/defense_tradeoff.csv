@@ -1,0 +1,5 @@
+dataset,model,defense,f1_clean_mean,f1_clean_std
+sms_uci,tfidf_word_lr.joblib,none,0.920863309352518,0.0
+sms_uci,tfidf_word_lr.joblib,normalize,0.8721804511278195,0.0
+spamassassin,spamassassin_tfidf_word_lr.joblib,none,0.1164725457570714,0.0
+spamassassin,spamassassin_tfidf_word_lr.joblib,normalize,0.1359867330016583,0.0

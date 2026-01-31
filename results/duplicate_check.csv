@@ -1,0 +1,13 @@
+dataset,split,dup_rate_in_split
+sms_uci,train,0.060103162143978484
+sms_uci,val,0.014362657091561926
+sms_uci,test,0.010752688172043001
+sms_uci,train∩val,0.1092896174863388
+sms_uci,train∩test,0.125
+sms_uci,val∩test,0.018115942028985508
+spamassassin,train,0.41052850603412405
+spamassassin,val,0.0515806988352745
+spamassassin,test,0.0515806988352745
+spamassassin,train∩val,0.8614035087719298
+spamassassin,train∩test,0.8666666666666667
+spamassassin,val∩test,0.10175438596491228

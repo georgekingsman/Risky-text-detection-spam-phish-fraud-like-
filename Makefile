@@ -48,6 +48,19 @@ textattack:
 	$(PY) -m src.textattack_baseline --dataset sms_uci --n-samples 200 --out results/textattack_sms.csv --examples-out results/textattack_sms_examples.jsonl
 	$(PY) -m src.textattack_baseline --dataset spamassassin --data-dir dataset/spamassassin/processed --n-samples 200 --out results/textattack_spamassassin.csv --examples-out results/textattack_spamassassin_examples.jsonl
 
+textattack_seeds:
+	$(PY) -m src.textattack_seeds --dataset sms_uci --n-samples 200 --seeds 0,1,2 --out-dir results/textattack_seeds
+	$(PY) -m src.textattack_seeds --dataset spamassassin --data-dir dataset/spamassassin/processed --n-samples 200 --seeds 0,1,2 --out-dir results/textattack_seeds
+
+defense_tradeoff:
+	$(PY) -m src.build_defense_tradeoff
+
+dup_check:
+	$(PY) -m src.check_duplicates
+
+cross_domain_table:
+	$(PY) -m src.build_cross_domain_table
+
 report:
 	@echo "Report located at report/report.md"
 
