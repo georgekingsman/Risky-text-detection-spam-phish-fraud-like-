@@ -64,6 +64,10 @@ We add a lightweight normalization defense (Unicode normalization, lowercasing, 
 ### 7.2 Multi-seed stability
 We run robustness under 5 seeds (0–4) and aggregate mean±std in [results/robustness_agg.csv](results/robustness_agg.csv). Key conclusions (most robust model, defense impact, and worst attack type) remain stable across seeds.
 
+We also visualize mean±std across seeds for in-domain models (defense=none):
+
+![Robustness delta (agg)](report/fig_robustness_delta_agg.png)
+
 ### 7.3 Adversarial baseline (TextAttack)
 We run a CPU-only TextAttack baseline using DeepWordBug on 200 sampled test messages per dataset. Results are saved in:
 - [results/textattack_sms.csv](results/textattack_sms.csv)
