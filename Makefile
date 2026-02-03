@@ -97,6 +97,22 @@ nn_distilbert_dedup:
 	  --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup \
 	  --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
 
+sensitivity_dedup:
+	$(PY) -m src.sensitivity_analysis_dedup
+
+distilbert_multiseed:
+	$(PY) src/train_distilbert_multiseed.py \
+	  --train_csv dataset/dedup/processed/all.csv \
+	  --train_domain sms \
+	  --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv \
+	  --eval_domains sms spamassassin \
+	  --out_dir models/distilbert_sms_dedup_multiseed \
+	  --results_csv results/distilbert_multiseed.csv \
+	  --seeds 0 1 2 --epochs 2 --batch 8 --max_len 128
+
+generate_sensitivity_tables:
+	$(PY) -m src.generate_sensitivity_tables
+
 paper_repro:
 	$(PY) -m src.dedup_split --data-dir dataset/processed --out-dir dataset/dedup/processed --report results/dedup_report_sms.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
 	$(PY) -m src.dedup_split --data-dir dataset/spamassassin/processed --out-dir dataset/spamassassin/dedup/processed --report results/dedup_report_spamassassin.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
@@ -120,6 +136,9 @@ paper_repro:
 	$(PY) -m src.plot_robustness_delta_dedup
 	$(PY) -m src.compare_robustness_dedup
 	$(PY) -m src.domain_shift_stats --a dataset/dedup/processed/train.csv --b dataset/spamassassin/dedup/processed/train.csv --text-col text --name-a sms --name-b spamassassin --out results/domain_shift_stats.csv --out-js results/domain_shift_js.csv
+	$(PY) -m src.sensitivity_analysis_dedup
+	$(PY) src/train_distilbert_multiseed.py --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup_multiseed --results_csv results/distilbert_multiseed.csv --seeds 0 1 2 --epochs 2 --batch 8 --max_len 128
+	$(PY) -m src.generate_sensitivity_tables
 	$(PY) -m src.generate_paper_tables
 	$(PY) -m src.generate_paper_assets
 

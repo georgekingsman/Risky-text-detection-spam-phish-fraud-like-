@@ -45,6 +45,21 @@ We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as 
 \caption{Robustness deltas on deduplicated splits.}
 \end{figure}
 
+\section{Hyperparameter Sensitivity and Multi-Seed Robustness}
+\textbf{DedupShift threshold analysis.} We analyze the sensitivity of DedupShift to SimHash Hamming thresholds (2, 3, 4). Lower thresholds remove more near-duplicates but may over-deduplicate; higher thresholds preserve more data but allow more leakage. We report deduplication rates and model F1 scores across thresholds to quantify this trade-off.
+
+\input{tables/sensitivity_dedup_threshold.tex}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig_sensitivity_dedup_threshold.png}
+\caption{DedupShift sensitivity: F1 and dedup rate vs. Hamming threshold.}
+\end{figure}
+
+\textbf{DistilBERT multi-seed training.} To ensure training stability and reduce seed-dependent variability, we train DistilBERT with seeds 0, 1, 2 and report mean $\pm$ std F1 scores. This demonstrates reproducibility and robustness of the neural baseline.
+
+\input{tables/distilbert_multiseed.tex}
+
 \section{Related Work}
 \textbf{Spam/phish detection baselines.} Classic statistical filters and linear models with TF-IDF features remain strong baselines for spam detection \cite{guzella2009review,almeida2011sms}. Recent work adopts BERT-family models for text classification \cite{sanh2019distilbert}.
 
@@ -57,14 +72,16 @@ We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as 
 \section{Threats to Validity and Limitations}
 \textbf{Domain coverage.} We evaluate only SMS and email; broader domains and languages may exhibit different shift patterns.
 
-\textbf{DedupShift approximation.} DedupShift removes exact and SimHash near-duplicates but may miss semantic paraphrases; dedup thresholds trade recall for precision.
+\textbf{DedupShift approximation.} DedupShift removes exact and SimHash near-duplicates but may miss semantic paraphrases; our sensitivity analysis (Section~\ref{sec:sensitivity}) explores threshold effects. Lower thresholds increase deduplication but may harm model performance; higher thresholds preserve more data but allow residual leakage.
+
+\textbf{Seed variance.} While we report mean $\pm$ std for DistilBERT multi-seed training, classical baselines (TF-IDF, MiniLM) are deterministic or have minimal seed variance and are reported at seed 0.
 
 \textbf{Defense scope.} Normalization and AugTrain are heuristic and may behave differently across formats or multilingual text.
 
 \textbf{Adversarial evaluation.} TextAttack is run on subsets and is a diagnostic, not an exhaustive adversarial guarantee.
 
 \section{Reproducibility and Artifacts}
-We release processing scripts, fixed seeds, and Makefile targets for one-command reproduction (\texttt{make paper\_repro}). Key artifacts include cross-domain tables, robustness matrices, DedupShift reports, TextAttack summaries, and domain-shift diagnostics.
+We release processing scripts, fixed seeds, and Makefile targets for one-command reproduction (\texttt{make paper\_repro}). This target sequences all data preprocessing, deduplication (with default $h_{\text{thresh}}=3$), model training, sensitivity analyses, robustness evaluation, and LaTeX table generation. Key artifacts include cross-domain tables, robustness matrices, DedupShift reports, TextAttack summaries, domain-shift diagnostics, hyperparameter sensitivity curves, and multi-seed neural baseline results.
 
 \bibliographystyle{plain}
 \bibliography{refs}
