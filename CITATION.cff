@@ -4,8 +4,7 @@ title: "DedupShift: Credible Cross-Domain Benchmarking for Risky Text Detection"
 abstract: "A reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains with DedupShift protocol for controlling dataset leakage from template-heavy corpora."
 
 authors:
-  - name: "George Kingsman"
-    orcid: "https://orcid.org/0000-0001-2345-6789"
+  - name: "Zhang Yuchen"
     affiliation: "Academia"
 
 date-released: 2026-02-03
@@ -53,14 +52,14 @@ references:
     url: "https://spamassassin.apache.org/publiccorpus/"
 
 contact:
-  - name: "George Kingsman"
-    email: "georgekingsman@example.com"
+  - name: "Zhang Yuchen"
+    email: "georgekingsman030226@gmail.com"
     affiliation: "Academia"
 
 preferred-citation:
   type: software
   authors:
-    - name: "George Kingsman"
+    - name: "Zhang Yuchen"
   title: "DedupShift: Credible Cross-Domain Benchmarking for Risky Text Detection"
   version: "1.0.0"
   date-released: 2026-02-03
