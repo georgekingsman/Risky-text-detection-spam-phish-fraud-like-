@@ -23,8 +23,10 @@ def table_cross_domain():
     df = pd.read_csv(path)
     model_map = {
         "tfidf_word_lr": "TF-IDF word LR",
+        "tfidf_word_lr_augtrain": "AugTrain TF-IDF",
         "tfidf_char_svm": "TF-IDF char SVM",
         "minilm_lr": "MiniLM + LR",
+        "minilm_lr_coral": "MiniLM + CORAL",
         "distilbert_ft": "DistilBERT-FT",
     }
     df["model"] = df["model"].map(lambda x: model_map.get(x, x))

@@ -1,382 +1,71 @@
 \documentclass[11pt]{article}
-
-\usepackage[margin=1in]{geometry}
-\usepackage{times}
-\usepackage{microtype}
-\usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{amsmath}
-\usepackage{enumitem}
+\usepackage{graphicx}
 \usepackage{hyperref}
-\usepackage{url}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{margin=1in}
+\graphicspath{{figs/}}
 
-\hypersetup{
-  colorlinks=true,
-  linkcolor=blue,
-  citecolor=blue,
-  urlcolor=blue
-}
-
-\title{Risky-Text Detection Under Domain Shift and Evasion:\\
-A Reproducible Benchmark with Robustness and Defense Ablations}
-
-\author{
-  Zhang Yuchen \\
-  % Affiliation (e.g., The University of Hong Kong) \\
-  % \texttt{your.email@domain.com}
-}
-
+\title{DedupShift: Credible Cross-Domain Benchmarking for Risky Text Detection}
+\author{}
 \date{}
 
 \begin{document}
 \maketitle
 
-% ===== Abstract =====
 \begin{abstract}
-Risky-text detection (e.g., spam/phishing/fraud-like messages) is commonly evaluated in-domain, yet real deployments face both \emph{domain shift} (SMS vs.\ email-like text) and \emph{evasion} via lightweight perturbations.
-We present a fully reproducible evaluation stack spanning two public corpora (SMS Spam Collection \cite{almeida2011sms}; SpamAssassin Public Corpus \cite{spamassassin_corpus}) and three CPU-friendly baselines (word TF--IDF+LR, character TF--IDF+linear SVM, and MiniLM embeddings+LR \cite{wang2020minilm,reimers2019sbert}), together with a robustness suite covering obfuscation, paraphrase-like rewrites, and prompt-injection-style prefixes.
-To improve evaluation validity under highly repetitive corpora, we introduce \textbf{DedupShift}: exact-match and SimHash near-duplicate filtering \cite{charikar2002simhash} prior to stratified splitting, with explicit leakage reporting.
-On SpamAssassin, DedupShift removes 52.0\% of examples (51.1\% exact + 0.9\% near-duplicate) and eliminates cross-split overlap (491/494/58 shared items in train$\cap$val/train$\cap$test/val$\cap$test reduced to 0).
-Across baselines, SMS in-domain performance remains strong (F1 $\approx$ 0.89--0.98), while cross-domain transfer remains challenging (F1 $\approx$ 0.09--0.45 depending on model and direction).
-We further evaluate a lightweight normalization defense via paired ablations (defense on/off) and report multi-seed aggregates with error bars, revealing attack- and model-dependent robustness trade-offs.
-Finally, we include a sample-based adversarial diagnostic using TextAttack \cite{morris2020textattack} (DeepWordBug \cite{gao2018deepwordbug}; 200 samples $\times$ 3 seeds per dataset).
-All tables, figures, and diagnostics are reproducible via scripted pipelines.
+We present a reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains. We report strong in-domain baselines (F1 up to 0.99) but substantial cross-domain degradation, and show that even a neural anchor baseline (DistilBERT fine-tuning) does not eliminate domain shift. We introduce DedupShift, a deduplicated split protocol that reduces leakage from template-heavy corpora and changes robustness estimates. Our suite includes perturbation-based robustness, normalization defense ablation, TextAttack sanity checks, and domain-shift diagnostics.
 \end{abstract}
 
-% ===== Introduction =====
 \section{Introduction}
-Risky-text detection is a core primitive in security and fintech informatics: messages from untrusted sources may carry spam, phishing, or fraud-like intent.
-In practice, two conditions routinely break otherwise strong classifiers.
-First, \textbf{domain shift} arises when the training channel differs from deployment (short, informal SMS vs.\ longer email-like messages), causing distribution mismatch in vocabulary, structure, and metadata cues.
-Second, \textbf{evasion} occurs when adversaries apply small, inexpensive edits---spacing and symbol injection, misspellings, synonym swaps, or instruction-like prefixes---to bypass lexical matching and heuristics.
+We study risky text detection under domain shift and adversarial perturbations. Our contributions are: (1) a two-domain benchmark with unified schema and reproducible pipeline; (2) DedupShift, a deduplicated split protocol to control leakage; (3) a robustness suite with defense ablations and a neural anchor baseline (DistilBERT-FT) for modern reference.
 
-While many spam/phishing studies report strong in-domain results, robustness and cross-domain evaluation is often inconsistent across datasets, perturbation choices, and reporting formats.
-This makes it difficult to compare methods and to reason about failure modes under realistic shift-and-evasion conditions.
-Our goal is not to introduce a new large model, but to provide a compact, reproducible benchmark and analysis that stress-tests widely used baselines under a unified protocol.
-
-\paragraph{Contributions.}
-We make the following contributions:
-\begin{itemize}\setlength\itemsep{2pt}
-  \item \textbf{Unified benchmark protocol.} We standardize data/result schemas and provide fixed stratified splits with explicit random seeds, enabling end-to-end reproduction of reported metrics and plots.
-  \item \textbf{DedupShift (leakage-controlled splits).} We introduce an exact-match + SimHash near-duplicate filtering \cite{charikar2002simhash} pipeline prior to splitting, and release leakage reports and deduplicated evaluation artifacts (e.g., \texttt{results/dedup\_report\_*.csv}, \texttt{results/cross\_domain\_table\_dedup.csv}).
-  \item \textbf{Cross-domain evaluation.} We report in-domain and cross-domain performance across SMS and email-like corpora, and quantify how deduplication changes conclusions about generalization.
-  \item \textbf{Robustness suite with defense ablations.} We implement three perturbation families (obfuscation, paraphrase-like, prompt-injection-style) and a lightweight normalization defense, reporting paired defense on/off results and F1\_drop (clean minus attacked).
-  \item \textbf{Shift diagnostics and adversarial/stability reporting.} We release domain-shift diagnostics (feature statistics and distribution divergence) and include multi-seed aggregation plus TextAttack-based adversarial diagnostics for reproducible robustness characterization.
-\end{itemize}
-
-\section{Related Work}
-Spam and phishing detection has a long history, ranging from lexical feature-based classifiers (e.g., TF--IDF) \cite{salton1988tfidf} to neural and pretrained encoder models such as BERT \cite{devlin2019bert}.
-Beyond in-domain benchmarks, cross-domain generalization is a practical concern because channel-specific artifacts (SMS vs.\ email) can dominate learned features.
-
-Robustness and adversarial NLP research studies how small perturbations can cause misclassification, including character-level corruptions and word-level edits.
-Tooling such as TextAttack \cite{morris2020textattack} standardizes attack recipes and evaluation workflows, and attacks such as DeepWordBug \cite{gao2018deepwordbug} highlight brittleness under minimal edit-distance corruption.
-Separately, dataset duplication and train--test overlap have been shown to inflate performance and compromise evaluation validity \cite{elangovan2021leakage,lee2022dedup}, motivating leakage-aware protocols.
-
-Our work complements these lines by emphasizing a reproducible protocol that jointly evaluates (i) in-domain performance, (ii) cross-domain transfer across communication channels, and (iii) robustness under practical evasion patterns with paired defense ablations, while explicitly controlling for leakage via DedupShift.
-
-% ===== Benchmark Setup =====
 \section{Benchmark Setup}
-\subsection{Datasets}
-We consider two public corpora representing distinct communication domains (SMS Spam Collection \cite{almeida2011sms}; SpamAssassin Public Corpus \cite{spamassassin_corpus}):
-(i) an SMS corpus labeled as spam vs.\ ham (short, informal messages), and
-(ii) an email-like corpus (SpamAssassin public corpus) commonly used in spam filtering evaluation.
-Both are mapped to binary labels and processed into a unified schema.
+We use SMS (UCI SMSSpamCollection) and SpamAssassin corpora with 80/10/10 stratified splits. DedupShift removes exact and near-duplicates (SimHash) before re-splitting to reduce leakage and template overlap.
 
-\subsection{Splits, schema, and data QA}
-We use fixed stratified splits (80/10/10 train/validation/test) with controlled random seeds.
-Each processed record follows \texttt{text,label,split}.
-To reduce the risk of inflated metrics, we compute within-split duplication rates and cross-split overlaps (train/val/test leakage checks), summarized in \texttt{results/duplicate\_check.csv}.
-
-\subsection{DedupShift: leakage-controlled splits}
-Email-like corpora can contain repeated boilerplate and near-duplicated messages that leak across train/validation/test splits, potentially inflating metrics and obscuring robustness trends.
-This concern is aligned with broader evidence of train--test overlap and duplicated content affecting NLP evaluation validity \cite{elangovan2021leakage,lee2022dedup}.
-We therefore introduce \textbf{DedupShift}: we canonicalize processed text, remove exact duplicates, and optionally remove near-duplicates using SimHash \cite{charikar2002simhash} with a fixed Hamming threshold prior to stratified splitting.
-We release per-dataset deduplication reports and deduplicated evaluation artifacts to support leakage-controlled comparisons.
-
-\begin{table}[t]
-\centering
-\small
-\caption{DedupShift report on the SpamAssassin corpus. We apply exact-match and SimHash near-duplicate filtering \cite{charikar2002simhash} prior to stratified splitting. DedupShift removes repeated content and eliminates cross-split overlap (train/val/test) on processed text.}
-\label{tab:dedupshift_report}
-\begin{tabular}{r r r r r r r}
-\toprule
-$ n_\text{in} $ & Exact removed & Near removed & $ n_\text{out} $ & Train$\cap$Val & Train$\cap$Test & Val$\cap$Test \\
-\midrule
-6008 & 3070 (51.1\%) & 54 (0.9\%) & 2884 (48.0\%) & 491$\rightarrow$0 & 494$\rightarrow$0 & 58$\rightarrow$0 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Reporting schema}
-All evaluations are recorded with a consistent schema:
-\texttt{dataset, setting, split, model, seed, f1, precision, recall, roc\_auc, notes}.
-This supports both in-domain and cross-domain settings, as well as robustness evaluations with defense flags.
-
-% ===== Baselines =====
 \section{Baselines}
-We focus on CPU-friendly baselines that are widely used in practice:
-\begin{enumerate}\setlength\itemsep{2pt}
-  \item \textbf{TFIDF-Word + LR:} word-level TF--IDF with logistic regression \cite{salton1988tfidf}.
-  \item \textbf{TFIDF-Char + Linear SVM:} character n-gram TF--IDF \cite{salton1988tfidf} with a linear SVM, often robust to spacing/symbol obfuscations.
-  \item \textbf{MiniLM + LR:} sentence embeddings from a MiniLM encoder followed by logistic regression.
-\end{enumerate}
-We additionally include a local LLM zero-shot baseline and an LLM-as-feature variant that appends a short rationale to the input prior to TF--IDF training.
-These are positioned as interpretability-oriented references rather than strong instruction-tuned LLM baselines.
-
-% ===== Threat Model & Defense =====
-\section{Threat Model and Robustness Evaluation}
-\subsection{Perturbation families}
-We evaluate three perturbation families reflecting common evasion strategies:
-\begin{itemize}\setlength\itemsep{2pt}
-  \item \textbf{Obfuscation:} spacing/symbol insertion, misspellings, and clutter intended to break lexical cues.
-  \item \textbf{Paraphrase-like:} meaning-preserving surface rewrites that reduce lexical overlap.
-  \item \textbf{Prompt-injection-style:} instruction-like prefixes prepended to content to probe instruction-following vulnerabilities.
-\end{itemize}
-All perturbations are applied to the test split under controlled seeds and fixed strength parameters (see code for exact settings).
-
-\subsection{Metrics}
-We report standard classification metrics on clean and perturbed test sets.
-For robustness, we use the \emph{F1 drop}:
-\[
-\mathrm{F1\_drop} = \mathrm{F1}_{\text{clean}} - \mathrm{F1}_{\text{attacked}},
-\]
-where larger values indicate worse robustness.
-In our released CSV files we also store the signed difference ($\Delta$F1 = F1$_\text{attacked}$ - F1$_\text{clean}$) for convenience; the two are equivalent up to sign.
-
-\subsection{Normalization defense and ablation}
-We implement a lightweight normalization defense (Unicode normalization, whitespace/punctuation cleanup, and simple canonicalization of repeated symbols) and report paired defense on/off results for all robustness settings.
+We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as a neural anchor baseline. We add two lightweight improvement baselines: (i) \textbf{AugTrain}, which applies training-time augmentation (obfuscation, paraphrase-like substitutions, and normalization) to spam samples; and (ii) \textbf{CORAL} domain alignment on MiniLM embeddings to reduce covariate shift. DistilBERT uses max length 128, batch 8, 2 epochs, seed 0.
 
 \section{Results}
-We report F1 as the primary metric and include robustness results under three perturbation families
-(obfuscation, paraphrase-like, prompt-injection-style). In robustness tables and figures, we use
-F1\_drop = F1$_\text{clean}$ - F1$_\text{attacked}$, where \textbf{larger values indicate larger degradation}.
-We additionally include a sample-based adversarial diagnostic using TextAttack (DeepWordBug).
-
-\subsection{In-domain and cross-domain performance}
-Table~\ref{tab:cross_domain_dedup} summarizes in-domain performance and cross-domain transfer, comparing the original splits to DedupShift splits.
-As shown in Table~\ref{tab:dedupshift_report} and Table~\ref{tab:duplicate-check}, the SpamAssassin corpus exhibits substantial split overlap under the original split construction; DedupShift eliminates this overlap by design.
-Comparing \emph{Orig} vs.\ \emph{Dedup}, email-like in-domain F1 changes markedly (from 0.09--0.32 to 0.42--0.47 across baselines), and cross-domain metrics also shift, highlighting that leakage-controlled evaluation can materially affect conclusions.
-Across settings, SMS in-domain performance remains strong, while cross-domain transfer remains challenging in both directions.
-Among the baselines, the character TF--IDF + linear SVM remains the strongest SMS$\rightarrow$email-like transfer in both settings.
-
-\begin{table}[t]
-\centering
-\small
-\caption{Cross-domain generalization before vs.\ after DedupShift (original vs.\ deduplicated splits). We report F1 for in-domain testing and cross-domain transfer (train on one domain, test on the other).}
-\label{tab:cross_domain_dedup}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{lcccccccc}
-\toprule
-\textbf{Model} & \multicolumn{2}{c}{\textbf{SMS in-domain}} & \multicolumn{2}{c}{\textbf{Email in-domain}} & \multicolumn{2}{c}{\textbf{SMS$\rightarrow$Email}} & \multicolumn{2}{c}{\textbf{Email$\rightarrow$SMS}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
- & Orig & Dedup & Orig & Dedup & Orig & Dedup & Orig & Dedup \\
-\midrule
-TFIDF-Word + LR & 0.921 & 0.893 & 0.116 & 0.472 & 0.135 & 0.089 & 0.284 & 0.304 \\
-TFIDF-Char + SVM & 0.973 & 0.984 & 0.093 & 0.455 & 0.462 & 0.450 & 0.224 & 0.242 \\
-MiniLM + LR & 0.952 & 0.923 & 0.316 & 0.415 & 0.155 & 0.119 & 0.135 & 0.171 \\
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\subsection{Robustness and defense ablation}
-Figure~\ref{fig:robust_delta} reports F1\_drop under three perturbation families, with defense ablation
-(\texttt{defense} $\in \{\texttt{none}, \texttt{normalize}\}$).
-Table~\ref{tab:robust_ablation} provides a concrete example slice on the SMS domain for MiniLM+LR, illustrating that
-normalization can introduce a non-trivial clean-set trade-off and may affect robustness differently across attack families.
-Notably, under this slice, normalization reduces clean F1 (0.952 $\rightarrow$ 0.913) and worsens obfuscation robustness
- (F1\_drop 0.055 $\rightarrow$ 0.217), while improving the prompt-injection perturbation outcome in this setting
-(F1\_drop 0.044 $\rightarrow$ -0.025). Such mixed effects motivate reporting paired defense on/off results and aggregating across seeds (Figure~\ref{fig:robust_delta_agg}).
-We further summarize the clean-set trade-off of enabling normalization for the TF--IDF+LR baseline in Table~\ref{tab:defense-tradeoff} (Appendix).
+\input{tables/cross_domain_table_dedup.tex}
+\input{tables/dedup_effect.tex}
+\input{tables/domain_shift_stats.tex}
+\input{tables/textattack_table.tex}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{report/fig_robustness_delta.png}
-\caption{F1\_drop under perturbations, with defense ablation (none vs normalize), across datasets and models. Larger values indicate performance degradation.}
-\label{fig:robust_delta}
+\includegraphics[width=0.95\linewidth]{Pipeline.png}
+\caption{Benchmark pipeline overview.}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{report/fig_robustness_delta_agg.png}
-\caption{Aggregated robustness F1\_drop (mean $\pm$ std) over multiple random seeds. Error bars reflect variability across seeds.}
-\label{fig:robust_delta_agg}
+\includegraphics[width=0.95\linewidth]{fig_robustness_delta_dedup.png}
+\caption{Robustness deltas on deduplicated splits.}
 \end{figure}
 
-\begin{table}[t]
-\centering
-\caption{Robustness under perturbations with defense ablation on SMS (MiniLM+LR slice). F1\_drop = F1$_\text{clean}$ - F1$_\text{attacked}$.}
-\label{tab:robust_ablation}
-\begin{tabular}{lccc}
-  \toprule
-  extbf{Setting} & \textbf{F1$_\text{clean}$} & \textbf{F1$_\text{attacked}$} & \textbf{F1\_drop} \\
-\midrule
-Obfuscate (none)        & 0.952 & 0.897 & 0.055 \\
-Paraphrase-like (none)  & 0.952 & 0.930 & 0.022 \\
-Prompt-injection (none) & 0.952 & 0.908 & 0.044 \\
-\addlinespace
-Obfuscate (normalize)        & 0.913 & 0.696 & 0.217 \\
-Paraphrase-like (normalize)  & 0.913 & 0.913 & 0.000 \\
-Prompt-injection (normalize) & 0.913 & 0.938 & -0.025 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\section{Related Work}
+\textbf{Spam/phish detection baselines.} Classic statistical filters and linear models with TF-IDF features remain strong baselines for spam detection \cite{guzella2009review,almeida2011sms}. Recent work adopts BERT-family models for text classification \cite{sanh2019distilbert}.
 
-\subsection{Adversarial diagnostic with TextAttack}
-We include a sample-based adversarial diagnostic using TextAttack with the DeepWordBug recipe.
-Table~\ref{tab:textattack} reports mean$\pm$std over three sampling seeds (200 samples per seed).
-On the sampled SMS subsets, DeepWordBug can induce catastrophic failures for word-level TF--IDF baselines,
-driving attacked-set F1 to 0.0 in this configuration, while the measured attack success rate remains around 0.13 under our
-success definition. We therefore interpret this experiment as a diagnostic signal of brittleness rather than a full adversarial
-evaluation on the complete test set.
+\textbf{Domain shift in NLP.} Cross-domain degradation is well-documented in sentiment and text classification; adaptation and continued pretraining are common remedies \cite{blitzer2007biographies,gururangan2020don}.
 
-\paragraph{On the metric discrepancy (success rate vs.\ attacked-set F1).}
-We report (i) an \emph{attack success rate} and (ii) the post-attack F1 computed on the attacked subset.
-These two metrics can diverge in practice. In particular, an attacked-set $\mathrm{F1}=0$ indicates that the model fails to retrieve any positive instances (i.e., predictions collapse to a single class), which can happen for sparse-feature baselines under character-level corruptions.
-Meanwhile, a non-zero success rate can still occur because it is computed under a different criterion (e.g., \emph{label flip} on a subset such as originally correctly-classified samples; see our implementation for the exact definition), and therefore does not necessarily imply non-zero post-attack F1.
-% Optional footnote version:
-\footnote{In our implementation, the success criterion follows the TextAttack goal function used in the pipeline; see the released code for the precise definition.}
+\textbf{Dataset leakage and near-duplicates.} Near-duplicate contamination can inflate evaluation scores; deduplication has been shown to improve validity in NLP benchmarks \cite{lee2022dedup}.
 
+\textbf{Adversarial text and robustness.} Character-level and synonym-based attacks reveal brittleness of text classifiers; TextAttack provides standardized evaluation recipes \cite{gao2018deepwordbug,morris2020textattack,jin2020textfooler}.
 
-\begin{table}[t]
-\centering
-\caption{Adversarial diagnostic with TextAttack (DeepWordBug) on sampled SMS test sets (mean $\pm$ std over 3 seeds; 200 samples per seed).}
-\label{tab:textattack}
-\begin{tabular}{lcccc}
-  \toprule
-  extbf{Model} & \textbf{Success rate} & \textbf{F1$_\text{clean}$} & \textbf{F1$_\text{attacked}$} & \textbf{F1\_drop} \\
-\midrule
-TFIDF-LLM-LR   & 0.137 $\pm$ 0.006 & 0.920 $\pm$ 0.000 & 0.000 $\pm$ 0.000 & 0.920 $\pm$ 0.000 \\
-TFIDF-Word-LR  & 0.130 $\pm$ 0.004 & 0.920 $\pm$ 0.000 & 0.000 $\pm$ 0.000 & 0.920 $\pm$ 0.000 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\section{Threats to Validity and Limitations}
+\textbf{Domain coverage.} We evaluate only SMS and email; broader domains and languages may exhibit different shift patterns.
 
-\section{Limitations and Threats to Validity}
-\label{sec:limitations}
+\textbf{DedupShift approximation.} DedupShift removes exact and SimHash near-duplicates but may miss semantic paraphrases; dedup thresholds trade recall for precision.
 
-\paragraph{Duplicates, near-duplicates, and split overlap.}
-We initially observed substantial exact-match duplication and heavy cross-split overlap on SpamAssassin under standard stratified splitting (Table~\ref{tab:duplicate-check}), which can confound both in-domain and robustness evaluation.
-We therefore include \textbf{DedupShift}: exact-match and SimHash near-duplicate filtering \cite{charikar2002simhash} prior to splitting, which eliminates cross-split overlap on SpamAssassin in our configuration (Table~\ref{tab:dedupshift_report}).
-However, near-duplicate filtering is approximate and threshold-dependent; it may remove semantically distinct messages that share templates, and it changes corpus size, so \emph{Orig} vs.\ \emph{Dedup} results should be interpreted as protocol comparisons rather than strict apples-to-apples dataset comparisons.
+\textbf{Defense scope.} Normalization and AugTrain are heuristic and may behave differently across formats or multilingual text.
 
-\paragraph{Scope of domains and languages.}
-Our benchmark covers two English corpora (SMS and email-like text), which provides a controlled setting to study channel shift, but does not capture other modalities (e.g., chat apps) or non-English languages.
-Extending to additional domains and multilingual corpora would improve external validity.
+\textbf{Adversarial evaluation.} TextAttack is run on subsets and is a diagnostic, not an exhaustive adversarial guarantee.
 
-\paragraph{Threat model coverage.}
-Our robustness suite focuses on three perturbation families (obfuscation, paraphrase-like rewrites, and prompt-injection-style prefixes).
-While these capture common evasion patterns, they do not exhaust the space of adversarial strategies (e.g., semantic attacks, multi-step social engineering, or content-aware adaptive attacks).
-We therefore view our perturbations as a practical, reproducible stress test rather than a complete adversarial model.
+\section{Reproducibility and Artifacts}
+We release processing scripts, fixed seeds, and Makefile targets for one-command reproduction (\texttt{make paper\_repro}). Key artifacts include cross-domain tables, robustness matrices, DedupShift reports, TextAttack summaries, and domain-shift diagnostics.
 
-\paragraph{Adversarial evaluation scale.}
-The TextAttack experiment is a sample-based diagnostic (200 examples per dataset, repeated over multiple seeds) rather than an exhaustive attack on the full test set.
-This design keeps the pipeline CPU-friendly and reproducible, but may underestimate or overestimate worst-case robustness depending on the sampled subset.
-
-\paragraph{LLM baseline strength.}
-Our LLM components are included primarily as interpretability-oriented references and as a feature-generation variant, not as a competitive instruction-tuned LLM benchmark.
-Stronger instruction-tuned models and larger-scale prompting studies are left to future work, potentially requiring GPU or API access.
-
-\section{Conclusion}
-We presented a reproducible risky-text detection benchmark that stress-tests common CPU-friendly baselines under two deployment-relevant challenges: domain shift (SMS vs.\ email-like text) and evasion via lightweight perturbations.
-Our results show that strong in-domain performance on SMS does not reliably transfer across domains, and that robustness can degrade substantially under obfuscation and adversarial corruption.
-We further showed that a simple normalization defense can change robustness outcomes in an attack- and model-dependent manner, motivating paired defense ablations and multi-seed reporting.
-Finally, a TextAttack diagnostic (DeepWordBug) highlights severe brittleness of sparse lexical baselines under character-level edits in our configuration.
-Future work includes extending DedupShift sensitivity analyses (canonicalization and near-duplicate thresholds) to additional corpora, benchmarking stronger neural and instruction-tuned baselines under controlled cost, expanding to more domains/languages, and broadening attack recipes with semantic-preserving perturbations.
-
-
-\section*{Acknowledgements}
-This work was prepared as a reproducible technical report. I thank collaborators and reviewers for feedback on experimental design and writing.
-
-\begin{thebibliography}{99}
-
-\bibitem{almeida2011sms}
-Tiago A. Almeida, Jos\'e Mar\'ia G\'omez Hidalgo, and Akebo Yamakami.
-\newblock Contributions to the study of SMS spam filtering: new collection and results.
-\newblock In \emph{Proceedings of the 2011 ACM Symposium on Document Engineering (DocEng)}, 2011.
-
-\bibitem{spamassassin_corpus}
-Apache SpamAssassin.
-\newblock SpamAssassin public mail corpus (readme).
-\newblock \url{https://spamassassin.apache.org/old/publiccorpus/readme.html}.
-
-\bibitem{salton1988tfidf}
-Gerard Salton and Christopher Buckley.
-\newblock Term-weighting approaches in automatic text retrieval.
-\newblock \emph{Information Processing \& Management}, 24(5):513--523, 1988.
-
-\bibitem{devlin2019bert}
-Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
-\newblock BERT: Pre-training of deep bidirectional transformers for language understanding.
-\newblock In \emph{NAACL-HLT}, 2019.
-
-\bibitem{reimers2019sbert}
-Nils Reimers and Iryna Gurevych.
-\newblock Sentence-BERT: Sentence embeddings using Siamese BERT-networks.
-\newblock In \emph{EMNLP-IJCNLP}, 2019.
-
-\bibitem{wang2020minilm}
-Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao, Nan Yang, and Ming Zhou.
-\newblock MiniLM: Deep self-attention distillation for task-agnostic compression of pretrained transformers.
-\newblock In \emph{NeurIPS}, 2020.
-
-\bibitem{morris2020textattack}
-John X. Morris, Eli Lifland, Jin Yong Yoo, Jake Grigsby, Di Jin, and Yanjun Qi.
-\newblock TextAttack: A framework for adversarial attacks, data augmentation, and adversarial training in NLP.
-\newblock arXiv:2005.05909, 2020.
-
-\bibitem{gao2018deepwordbug}
-Ji Gao, Jack Lanchantin, Mary Lou Soffa, and Yanjun Qi.
-\newblock Black-box generation of adversarial text sequences to evade deep learning classifiers.
-\newblock arXiv:1801.04354, 2018.
-
-\bibitem{charikar2002simhash}
-Moses S. Charikar.
-\newblock Similarity estimation techniques from rounding algorithms.
-\newblock In \emph{Proceedings of STOC}, 2002.
-
-\bibitem{lee2022dedup}
-Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck, Chris Callison-Burch, and Nicholas Carlini.
-\newblock Deduplicating training data makes language models better.
-\newblock In \emph{ACL}, 2022.
-
-\bibitem{elangovan2021leakage}
-Aravind Elangovan, Jugal Kalita, and others.
-\newblock Memorization vs.\ generalization: quantifying data leakage in NLP performance evaluation.
-\newblock In \emph{EACL}, 2021.
-
-\end{thebibliography}
-
-\appendix
-\section{Additional Reproducibility and Data Quality Tables}
-
-\begin{table}[t]
-\centering
-\small
-\caption{Clean Performance Trade-off of the Normalization Defense. We report clean-test F1 for the word TF--IDF + LR baseline with defense \texttt{none} vs.\ \texttt{normalize}. Positive $\Delta$ indicates improved clean F1 after enabling the defense.}
-\label{tab:defense-tradeoff}
-\begin{tabular}{l l r r r}
-  \toprule
-Dataset & Model & F1 (none) & F1 (normalize) & $\Delta$ \\
-\midrule
-sms\_uci & tfidf\_word\_lr.joblib & 0.921 & 0.872 & -0.049 \\
-spamassassin & spamassassin\_tfidf\_word\_lr.joblib & 0.116 & 0.136 & +0.020 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[t]
-\centering
-\small
-\caption{Duplicate Rates Within and Across Splits (Processed Text Field). We compute exact-match duplicate rates within each split and split-overlap rates (train$\cap$val, train$\cap$test, val$\cap$test). For SpamAssassin, the original splits show heavy overlap; DedupShift removes cross-split overlap (Table~\ref{tab:dedupshift_report}).}
-\label{tab:duplicate-check}
-\begin{tabular}{l r r r r r r}
-\toprule
-Dataset & Train (dup) & Val (dup) & Test (dup) & Train$\cap$Val & Train$\cap$Test & Val$\cap$Test \\
-\midrule
-sms\_uci & 6.0\% & 1.4\% & 1.1\% & 10.9\% & 12.5\% & 1.8\% \\
-spamassassin & 41.1\% & 5.2\% & 5.2\% & 86.1\% & 86.7\% & 10.2\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
+\bibliographystyle{plain}
+\bibliography{refs}
 \end{document}

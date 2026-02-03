@@ -70,6 +70,8 @@ dedup:
 dedup_train:
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/dedup/processed --prefix sms_dedup
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup
+	$(PY) -m src.train_augtrain --data-dir dataset/dedup/processed --prefix sms_dedup --seed 0
+	$(PY) -m src.train_augtrain --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup --seed 0
 
 dedup_eval:
 	$(PY) -m src.build_results_dedup
@@ -102,6 +104,8 @@ paper_repro:
 	$(PY) -m src.build_dedup_all --data-dir dataset/spamassassin/dedup/processed --out dataset/spamassassin/dedup/processed/all.csv
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/dedup/processed --prefix sms_dedup
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup
+	$(PY) -m src.train_augtrain --data-dir dataset/dedup/processed --prefix sms_dedup --seed 0
+	$(PY) -m src.train_augtrain --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup --seed 0
 	$(PY) -m src.build_results_dedup
 	$(PY) -m src.build_cross_domain_table --results results/results_dedup.csv --out results/cross_domain_table_dedup.csv
 	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci_dedup --data-dir dataset/dedup/processed --defense normalize --include-baseline --model-glob "models/*dedup*.joblib" --out results/robustness_dedup_sms.csv

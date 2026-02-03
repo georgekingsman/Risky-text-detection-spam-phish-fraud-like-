@@ -1,4 +1,12 @@
 attack,dataset,model,defense,f1_clean,f1_attacked,delta_f1
+clean,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,normalize,0.9508196721311475,0.9508196721311475,0.0
+obfuscate,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,normalize,0.9508196721311475,0.8837209302325582,-0.06709874189858933
+paraphrase_like,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,normalize,0.9508196721311475,0.9354838709677419,-0.015335801163405605
+prompt_injection,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,normalize,0.9508196721311475,0.9401709401709402,-0.010648731960207325
+clean,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,none,0.9508196721311475,0.9508196721311475,0.0
+obfuscate,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,none,0.9508196721311475,0.8992248062015504,-0.051594865929597056
+paraphrase_like,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,none,0.9508196721311475,0.9354838709677419,-0.015335801163405605
+prompt_injection,sms_uci_dedup,sms_dedup_aug_tfidf_word_lr.joblib,none,0.9508196721311475,0.9401709401709402,-0.010648731960207325
 clean,sms_uci_dedup,sms_dedup_minilm_lr.joblib,normalize,0.8928571428571429,0.8928571428571429,0.0
 obfuscate,sms_uci_dedup,sms_dedup_minilm_lr.joblib,normalize,0.8928571428571429,0.74,-0.1528571428571429
 paraphrase_like,sms_uci_dedup,sms_dedup_minilm_lr.joblib,normalize,0.8928571428571429,0.8928571428571429,0.0
@@ -23,6 +31,14 @@ clean,sms_uci_dedup,sms_dedup_tfidf_word_lr.joblib,none,0.8928571428571429,0.892
 obfuscate,sms_uci_dedup,sms_dedup_tfidf_word_lr.joblib,none,0.8928571428571429,0.8076923076923077,-0.0851648351648352
 paraphrase_like,sms_uci_dedup,sms_dedup_tfidf_word_lr.joblib,none,0.8928571428571429,0.8623853211009175,-0.030471821756225426
 prompt_injection,sms_uci_dedup,sms_dedup_tfidf_word_lr.joblib,none,0.8928571428571429,0.819047619047619,-0.07380952380952388
+clean,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,normalize,0.21565217391304348,0.21565217391304348,0.0
+obfuscate,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,normalize,0.21565217391304348,0.21565217391304348,0.0
+paraphrase_like,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,normalize,0.21565217391304348,0.21565217391304348,0.0
+prompt_injection,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,normalize,0.21565217391304348,0.21565217391304348,0.0
+clean,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,none,0.21565217391304348,0.21565217391304348,0.0
+obfuscate,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,none,0.21565217391304348,0.21565217391304348,0.0
+paraphrase_like,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,none,0.21565217391304348,0.21565217391304348,0.0
+prompt_injection,sms_uci_dedup,spamassassin_dedup_aug_tfidf_word_lr.joblib,none,0.21565217391304348,0.21565217391304348,0.0
 clean,sms_uci_dedup,spamassassin_dedup_minilm_lr.joblib,normalize,0.15458937198067632,0.15458937198067632,0.0
 obfuscate,sms_uci_dedup,spamassassin_dedup_minilm_lr.joblib,normalize,0.15458937198067632,0.1590909090909091,0.004501537110232767
 paraphrase_like,sms_uci_dedup,spamassassin_dedup_minilm_lr.joblib,normalize,0.15458937198067632,0.163855421686747,0.009266049706070673

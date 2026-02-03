@@ -63,19 +63,39 @@ def main():
 
     cross_path = Path(args.cross_table)
     cross_df = pd.read_csv(cross_path)
-    cross_df = cross_df[cross_df["model"] != "distilbert_ft"]
-    cross_df = pd.concat([
-        cross_df,
-        pd.DataFrame([
-            {
-                "model": "distilbert_ft",
-                "sms_in_domain_f1": sms_in,
-                "spam_in_domain_f1": spam_in,
-                "sms_to_spam_f1": sms2spam,
-                "spam_to_sms_f1": spam2sms,
-            }
-        ])
-    ], ignore_index=True)
+    cross_df = cross_df[~cross_df["model"].isin(["distilbert_ft", "tfidf_word_lr_augtrain", "minilm_lr_coral"]) ]
+
+    # AugTrain and CORAL rows from results_dedup
+    res_df = pd.read_csv(results_path)
+
+    def add_row_from_results(model_name: str):
+        def pick(train, test):
+            sub = res_df[(res_df["model"] == model_name) & (res_df["notes"].str.contains(f"train={train}")) & (res_df["dataset"].str.startswith(test))]
+            if sub.empty:
+                return ""
+            return float(sub.iloc[0]["f1"])
+
+        return {
+            "model": model_name,
+            "sms_in_domain_f1": pick("sms_uci_dedup", "sms_uci"),
+            "spam_in_domain_f1": pick("spamassassin_dedup", "spamassassin"),
+            "sms_to_spam_f1": pick("sms_uci_dedup", "spamassassin"),
+            "spam_to_sms_f1": pick("spamassassin_dedup", "sms_uci"),
+        }
+
+    rows_extra = [
+        {
+            "model": "distilbert_ft",
+            "sms_in_domain_f1": sms_in,
+            "spam_in_domain_f1": spam_in,
+            "sms_to_spam_f1": sms2spam,
+            "spam_to_sms_f1": spam2sms,
+        },
+        add_row_from_results("tfidf_word_lr_augtrain"),
+        add_row_from_results("minilm_lr_coral"),
+    ]
+
+    cross_df = pd.concat([cross_df, pd.DataFrame(rows_extra)], ignore_index=True)
     cross_df.to_csv(cross_path, index=False)
 
     print("Wrote", results_path)
