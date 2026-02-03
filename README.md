@@ -36,4 +36,11 @@ This regenerates DedupShift splits, classical baselines, DistilBERT anchor, robu
 make paper_repro
 ```
 
+Includes optional P2 experimental completeness features:
+- **DedupShift sensitivity analysis** (h_thresh 2/3/4): `make sensitivity_dedup`
+- **DistilBERT multi-seed training** (seeds 0/1/2 with mean±std): `make distilbert_multiseed`
+- **Generate sensitivity tables/figures**: `make generate_sensitivity_tables`
+
+See [P2_SENSITIVITY_ANALYSIS.md](P2_SENSITIVITY_ANALYSIS.md) for details on optional experimental completeness.
+
 See [Makefile](Makefile) for all targets.
