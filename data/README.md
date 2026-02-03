@@ -3,8 +3,10 @@ This folder contains processed datasets used in the benchmark.
 Structure:
 - data/sms_spam/processed/{train.csv,val.csv,test.csv}
 - data/sms_spam/dedup/processed/{train.csv,val.csv,test.csv}
+- data/sms_spam/dedup/processed/all.csv
 - data/spamassassin/processed/{train.csv,val.csv,test.csv}
 - data/spamassassin/dedup/processed/{train.csv,val.csv,test.csv}
+- data/spamassassin/dedup/processed/all.csv
 
 CSV schema: `text,label,split` where `label` is 1 for spam, 0 for ham and `split` is one of train/val/test.
 

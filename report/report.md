@@ -31,6 +31,9 @@ We train three main baselines:
 2) TF-IDF (character n-grams) + Linear SVM
 3) Sentence-Transformer embeddings (MiniLM) + Logistic Regression
 
+We also include a modern neural baseline:
+- DistilBERT fine-tuning on deduplicated splits (in-domain + cross-domain).
+
 We also include:
 - LLM zero-shot classification with rationales (local `distilgpt2`)
 - LLM-as-feature: LLM rationales appended to text before TF-IDF+LR
@@ -59,6 +62,10 @@ The cross-domain summary is documented in [results/robustness_cross_domain.md](r
 We also provide a compact cross-domain table for paper-ready reporting in [results/cross_domain_table.csv](results/cross_domain_table.csv).
 
 Dedup cross-domain table (protocol-controlled): [results/cross_domain_table_dedup.csv](results/cross_domain_table_dedup.csv).
+
+Neural baseline outputs (DistilBERT, dedup):
+- [results/nn_distilbert_sms_train.csv](results/nn_distilbert_sms_train.csv)
+- [results/nn_distilbert_spam_train.csv](results/nn_distilbert_spam_train.csv)
 
 ## 7. Robustness under perturbations
 We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table (SMS + SpamAssassin) is in [results/robustness.csv](results/robustness.csv).

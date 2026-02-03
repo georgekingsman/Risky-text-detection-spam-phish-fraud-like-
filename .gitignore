@@ -3,6 +3,7 @@ dataset/
 models/*.joblib
 models/*.pt
 models/*.bin
+models/distilbert_*
 .env
 __pycache__/
 *.pyc
