@@ -30,4 +30,10 @@ make llm
 make textattack
 ```
 
+## Paper reproduction (longer, CPU)
+This regenerates DedupShift splits, classical baselines, DistilBERT anchor, robustness tables, and domain shift diagnostics.
+```bash
+make paper_repro
+```
+
 See [Makefile](Makefile) for all targets.

@@ -95,6 +95,28 @@ nn_distilbert_dedup:
 	  --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup \
 	  --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
 
+paper_repro:
+	$(PY) -m src.dedup_split --data-dir dataset/processed --out-dir dataset/dedup/processed --report results/dedup_report_sms.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
+	$(PY) -m src.dedup_split --data-dir dataset/spamassassin/processed --out-dir dataset/spamassassin/dedup/processed --report results/dedup_report_spamassassin.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
+	$(PY) -m src.build_dedup_all --data-dir dataset/dedup/processed --out dataset/dedup/processed/all.csv
+	$(PY) -m src.build_dedup_all --data-dir dataset/spamassassin/dedup/processed --out dataset/spamassassin/dedup/processed/all.csv
+	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/dedup/processed --prefix sms_dedup
+	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup
+	$(PY) -m src.build_results_dedup
+	$(PY) -m src.build_cross_domain_table --results results/results_dedup.csv --out results/cross_domain_table_dedup.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci_dedup --data-dir dataset/dedup/processed --defense normalize --include-baseline --model-glob "models/*dedup*.joblib" --out results/robustness_dedup_sms.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin_dedup --data-dir dataset/spamassassin/dedup/processed --defense normalize --include-baseline --model-glob "models/*dedup*.joblib" --out results/robustness_dedup_spamassassin.csv
+	$(PY) -m src.merge_robustness_dedup
+	$(PY) -m src.nn_distilbert_ft --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup --results_csv results/nn_distilbert_sms_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
+	$(PY) -m src.nn_distilbert_ft --train_csv dataset/spamassassin/dedup/processed/all.csv --train_domain spamassassin --eval_csvs dataset/spamassassin/dedup/processed/all.csv dataset/dedup/processed/all.csv --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
+	$(PY) -m src.merge_distilbert_results
+	$(PY) -m src.nn_distilbert_ft --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup --results_csv results/nn_distilbert_sms_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128 --robust --robust_out results/robustness_distilbert_sms_dedup.csv
+	$(PY) -m src.nn_distilbert_ft --train_csv dataset/spamassassin/dedup/processed/all.csv --train_domain spamassassin --eval_csvs dataset/spamassassin/dedup/processed/all.csv dataset/dedup/processed/all.csv --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128 --robust --robust_out results/robustness_distilbert_spam_dedup.csv
+	$(PY) -m src.merge_robustness_distilbert
+	$(PY) -m src.plot_robustness_delta_dedup
+	$(PY) -m src.compare_robustness_dedup
+	$(PY) -m src.domain_shift_stats --a dataset/dedup/processed/train.csv --b dataset/spamassassin/dedup/processed/train.csv --text-col text --name-a sms --name-b spamassassin --out results/domain_shift_stats.csv --out-js results/domain_shift_js.csv
+
 report:
 	@echo "Report located at report/report.md"
 

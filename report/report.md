@@ -71,9 +71,8 @@ Neural baseline outputs (DistilBERT, dedup):
 We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table (SMS + SpamAssassin) is in [results/robustness.csv](results/robustness.csv).
 
 Findings:
-- Character n-grams are most resilient to obfuscation (smallest ΔF1).
-- Word TF-IDF suffers larger drops under obfuscation and paraphrase-like perturbations.
-- MiniLM shows moderate robustness, especially on paraphrase-like changes.
+
+Note: `delta_f1` is computed as $(\text{F1}_{attacked} - \text{F1}_{clean})$. When interpreting drops, use $\text{F1}_{drop} = -\text{delta_f1}$.
 
 ### 7.1 Normalization defense (CPU-only)
 We add a lightweight normalization defense (Unicode normalization, lowercasing, common obfuscation replacements, punctuation/space cleanup) and re-run robustness on both datasets. The defense reduces the drop for obfuscation on word-based models, indicating that simple preprocessing can mitigate common evasion patterns. Results are included in [results/robustness.csv](results/robustness.csv) with `defense=normalize` and a paired `defense=none` baseline.
