@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{abstract}
-We present a reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains. We report strong in-domain baselines (F1 up to 0.99) but substantial cross-domain degradation, and show that even a neural anchor baseline (DistilBERT fine-tuning) does not eliminate domain shift. We introduce DedupShift, a deduplicated split protocol that reduces leakage from template-heavy corpora and changes robustness estimates. Our suite includes perturbation-based robustness, normalization defense ablation, TextAttack sanity checks, and domain-shift diagnostics.
+We present a reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains. We report strong in-domain baselines (F1 up to 0.99) but substantial cross-domain degradation (F1 range 0.09–0.30), demonstrating that even neural baselines (DistilBERT F1 0.56) do not eliminate domain shift. We introduce DedupShift, a deduplicated split protocol that removes $\sim$8\% near-duplicates before re-splitting to reduce leakage from template-heavy corpora. Our suite includes perturbation-based robustness evaluation, normalization defense ablation, TextAttack sanity checks, and domain-shift diagnostics with sensitivity analysis on hyperparameter choices.
 \end{abstract}
 
 \section{Introduction}
@@ -36,13 +36,15 @@ We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{Pipeline.png}
-\caption{Benchmark pipeline overview.}
+\caption{\textbf{Benchmark pipeline.} Data flows through: (1) raw corpora (SMS UCI, SpamAssassin); (2) deduplication (exact + SimHash near-duplicates with $h_{\text{thresh}}=3$, removes $\sim$8\%); (3) train/val/test split; (4) baseline training; (5) robustness and cross-domain evaluation.}
+\label{fig:pipeline}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{fig_robustness_delta_dedup.png}
-\caption{Robustness deltas on deduplicated splits.}
+\caption{\textbf{Robustness deltas on deduplicated splits.} Bar chart shows mean F1 degradation (in \%) under perturbations (obfuscate, paraphrase, prompt injection) with and without normalization defense. AugTrain shows resilience to obfuscation and paraphrase attacks compared to baseline TF-IDF, while DistilBERT neural baseline shows high vulnerability to all attacks. Normalization defense universally mitigates attacks but at non-zero cost to in-domain performance.}
+\label{fig:robustness_delta}
 \end{figure}
 
 \section{Hyperparameter Sensitivity and Multi-Seed Robustness}
@@ -53,7 +55,8 @@ We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{fig_sensitivity_dedup_threshold.png}
-\caption{DedupShift sensitivity: F1 and dedup rate vs. Hamming threshold.}
+\caption{\textbf{DedupShift threshold sensitivity.} Left: deduplication rate (percentage of data removed) increases as $h_{\text{thresh}}$ decreases. Right: in-domain F1 is robust to threshold choice but slightly improves at higher thresholds; default $h_{\text{thresh}}=3$ balances data retention and near-duplicate removal. Trade-off: lower thresholds remove more potential leakage but risk over-deduplication.}
+\label{fig:sensitivity}
 \end{figure}
 
 \textbf{DistilBERT multi-seed training.} To ensure training stability and reduce seed-dependent variability, we train DistilBERT with seeds 0, 1, 2 and report mean $\pm$ std F1 scores. This demonstrates reproducibility and robustness of the neural baseline.
