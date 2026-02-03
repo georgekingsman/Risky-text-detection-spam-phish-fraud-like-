@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\caption{Cross-domain F1 on deduplicated splits.}
+\label{tab:cross_domain_dedup}
+\begin{tabular}{lcccc}
+\toprule
+Model & SMS in-domain & SpamAssassin in-domain & SMS$\to$SpamAssassin & SpamAssassin$\to$SMS \
+\midrule
+TF-IDF word LR & 0.893 & 0.472 & 0.089 & 0.304 \
+TF-IDF char SVM & 0.984 & 0.455 & 0.450 & 0.242 \
+MiniLM + LR & 0.923 & 0.415 & 0.119 & 0.171 \
+DistilBERT-FT & 0.992 & 0.000 & 0.548 & 0.030 \
+\bottomrule
+\end{tabular}
+\end{table}

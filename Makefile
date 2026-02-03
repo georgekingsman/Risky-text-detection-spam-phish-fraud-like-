@@ -116,6 +116,8 @@ paper_repro:
 	$(PY) -m src.plot_robustness_delta_dedup
 	$(PY) -m src.compare_robustness_dedup
 	$(PY) -m src.domain_shift_stats --a dataset/dedup/processed/train.csv --b dataset/spamassassin/dedup/processed/train.csv --text-col text --name-a sms --name-b spamassassin --out results/domain_shift_stats.csv --out-js results/domain_shift_js.csv
+	$(PY) -m src.generate_paper_tables
+	$(PY) -m src.generate_paper_assets
 
 report:
 	@echo "Report located at report/report.md"

@@ -1,0 +1,27 @@
+\begin{table}[t]
+\centering
+\caption{Average change in F1 drop after DedupShift (positive means larger drop).}
+\label{tab:dedup_effect}
+\begin{tabular}{lccr}
+\toprule
+Dataset & Attack & Defense & $\Delta$F1$_{drop}$ \
+\midrule
+sms_uci & clean & none & 0.000 \
+sms_uci & clean & normalize & 0.000 \
+sms_uci & obfuscate & none & -0.011 \
+sms_uci & obfuscate & normalize & -0.001 \
+sms_uci & paraphrase_like & none & -0.016 \
+sms_uci & paraphrase_like & normalize & -0.014 \
+sms_uci & prompt_injection & none & 0.018 \
+sms_uci & prompt_injection & normalize & 0.023 \
+spamassassin & clean & none & 0.000 \
+spamassassin & clean & normalize & 0.000 \
+spamassassin & obfuscate & none & 0.004 \
+spamassassin & obfuscate & normalize & 0.022 \
+spamassassin & paraphrase_like & none & 0.000 \
+spamassassin & paraphrase_like & normalize & -0.001 \
+spamassassin & prompt_injection & none & -0.035 \
+spamassassin & prompt_injection & normalize & -0.038 \
+\bottomrule
+\end{tabular}
+\end{table}

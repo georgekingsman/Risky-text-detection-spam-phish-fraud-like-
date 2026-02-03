@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\caption{Domain shift diagnostics on deduplicated train splits.}
+\label{tab:domain_shift}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Domain & Len & Tokens & Digit & Punct & URL & Email & Phone \
+\midrule
+sms & 79.423 & 16.043 & 0.018 & 0.058 & 0.016 & 0.001 & 0.073 \
+spamassassin & 2146.361 & 299.250 & 0.043 & 0.115 & 2.370 & 1.093 & 0.766 \
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\footnotesize{Char n-gram JS divergence: 0.200}
+\end{table}

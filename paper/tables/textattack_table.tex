@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\\caption{TextAttack (DeepWordBug) on 200-sample subsets, 3 seeds (mean$\\pm$std).}
+\label{tab:textattack}
+\begin{tabular}{lcccc}
+\toprule
+Dataset & Model & Success rate & F1 clean & F1 attacked \
+\midrule
+sms_uci & tfidf_llm_lr.joblib & 0.137$\pm$0.006 & 0.920$\pm$0.000 & 0.000$\pm$0.000 \
+sms_uci & tfidf_word_lr.joblib & 0.130$\pm$0.004 & 0.920$\pm$0.000 & 0.000$\pm$0.000 \
+spamassassin & spamassassin_tfidf_word_lr.joblib & 0.093$\pm$0.006 & 0.122$\pm$0.005 & 0.017$\pm$0.012 \
+\bottomrule
+\end{tabular}
+\end{table}
