@@ -41,6 +41,23 @@ Includes optional P2 experimental completeness features:
 - **DistilBERT multi-seed training** (seeds 0/1/2 with mean±std): `make distilbert_multiseed`
 - **Generate sensitivity tables/figures**: `make generate_sensitivity_tables`
 
-See [P2_SENSITIVITY_ANALYSIS.md](P2_SENSITIVITY_ANALYSIS.md) for details on optional experimental completeness.
+## Paper Submission Ready
+
+See [P3_PACKAGING_CHECKLIST.md](P3_PACKAGING_CHECKLIST.md) for pre-submission polish:
+- ✅ Figure captions with quantitative conclusions
+- ✅ Abstract with key numbers (F1 ranges, dedup rate, etc.)
+- ✅ CITATION.cff for GitHub-based citing
+- ✅ Release v1.0.0 tag
+- ✅ Data compliance documentation
+
+## Documentation & Guides
+
+- [P2_SENSITIVITY_ANALYSIS.md](P2_SENSITIVITY_ANALYSIS.md) - Hyperparameter sensitivity and multi-seed details
+- [P2_QUICKSTART.md](P2_QUICKSTART.md) - Quick guide for P2 features
+- [P2_IMPLEMENTATION_SUMMARY.md](P2_IMPLEMENTATION_SUMMARY.md) - Technical implementation details
+- [P3_PACKAGING_CHECKLIST.md](P3_PACKAGING_CHECKLIST.md) - Pre-submission checklist
+- [DATA_COMPLIANCE.md](DATA_COMPLIANCE.md) - Data licensing and PII compliance
+- [CITATION.cff](CITATION.cff) - Citation metadata (auto-used by GitHub)
+- [LICENSE](LICENSE) - MIT license for code
 
 See [Makefile](Makefile) for all targets.
