@@ -17,6 +17,14 @@ Processed data lives under:
 - [data/spamassassin/processed/val.csv](data/spamassassin/processed/val.csv)
 - [data/spamassassin/processed/test.csv](data/spamassassin/processed/test.csv)
 
+### 2.1 DedupShift protocol (deduplicated splits + leakage control)
+We introduce a **deduplicated split protocol** that removes exact and near-duplicates (SimHash) before re-splitting into 80/10/10 stratified splits. This reduces cross-split leakage in template-heavy corpora and yields more conservative estimates.
+
+Artifacts:
+- Dedup reports: [results/dedup_report_sms.csv](results/dedup_report_sms.csv), [results/dedup_report_spamassassin.csv](results/dedup_report_spamassassin.csv)
+- Dedup splits (SMS): [dataset/dedup/processed/train.csv](dataset/dedup/processed/train.csv), [dataset/dedup/processed/val.csv](dataset/dedup/processed/val.csv), [dataset/dedup/processed/test.csv](dataset/dedup/processed/test.csv)
+- Dedup splits (SpamAssassin): [dataset/spamassassin/dedup/processed/train.csv](dataset/spamassassin/dedup/processed/train.csv), [dataset/spamassassin/dedup/processed/val.csv](dataset/spamassassin/dedup/processed/val.csv), [dataset/spamassassin/dedup/processed/test.csv](dataset/spamassassin/dedup/processed/test.csv)
+
 ## 3. Models and baselines
 We train three main baselines:
 1) TF-IDF (word n-grams) + Logistic Regression
@@ -50,6 +58,8 @@ The cross-domain summary is documented in [results/robustness_cross_domain.md](r
 
 We also provide a compact cross-domain table for paper-ready reporting in [results/cross_domain_table.csv](results/cross_domain_table.csv).
 
+Dedup cross-domain table (protocol-controlled): [results/cross_domain_table_dedup.csv](results/cross_domain_table_dedup.csv).
+
 ## 7. Robustness under perturbations
 We generate three perturbation families: obfuscation, paraphrase-like, and prompt-injection style perturbations. The full robustness table (SMS + SpamAssassin) is in [results/robustness.csv](results/robustness.csv).
 
@@ -69,6 +79,12 @@ We run robustness under 5 seeds (0–4) and aggregate mean±std in [results/robu
 We also visualize mean±std across seeds for in-domain models (defense=none):
 
 ![Robustness delta (agg)](report/fig_robustness_delta_agg.png)
+
+### 7.4 DedupShift robustness impact
+We re-run robustness under the deduplicated splits and compare against the original protocol:
+- Dedup robustness table: [results/robustness_dedup.csv](results/robustness_dedup.csv)
+- Dedup robustness plot: [report/fig_robustness_delta_dedup.png](report/fig_robustness_delta_dedup.png)
+- Dedup effect (ΔF1 change): [results/dedup_effect.csv](results/dedup_effect.csv)
 
 ### 7.3 Adversarial baseline (TextAttack)
 We run a CPU-only TextAttack baseline using DeepWordBug on 200 sampled test messages per dataset. Results are saved in:
@@ -113,6 +129,8 @@ Data QA checks (exact-duplicate rates within splits and across splits) are recor
 
 Clean performance vs. normalization defense trade-off is summarized in [results/defense_tradeoff.csv](results/defense_tradeoff.csv).
 
+Domain shift diagnostics (length, symbol density, URL/email/phone frequency) are summarized in [results/domain_shift_stats.csv](results/domain_shift_stats.csv) with distributional divergence in [results/domain_shift_js.csv](results/domain_shift_js.csv).
+
 ## 11. Limitations and next steps
 - LLM baselines are limited by local model capacity; larger instruction-tuned models should improve accuracy and rationale quality.
 - Cross-domain performance remains low, suggesting opportunities for domain adaptation or contrastive pretraining.
@@ -122,6 +140,9 @@ Clean performance vs. normalization defense trade-off is summarized in [results/
 
 **Artifacts:**
 - Primary results table: [results/results.csv](results/results.csv)
+- Dedup results table: [results/results_dedup.csv](results/results_dedup.csv)
 - Robustness table: [results/robustness.csv](results/robustness.csv)
+- Dedup robustness table: [results/robustness_dedup.csv](results/robustness_dedup.csv)
 - Cross-domain summary: [results/robustness_cross_domain.md](results/robustness_cross_domain.md)
+- Dedup cross-domain table: [results/cross_domain_table_dedup.csv](results/cross_domain_table_dedup.csv)
 - LLM cases: [results/cases.md](results/cases.md)

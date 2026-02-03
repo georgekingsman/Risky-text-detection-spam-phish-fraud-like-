@@ -39,6 +39,7 @@ def main():
     ap.add_argument('--defense', default='none', choices=['none', 'normalize'], help='Optional defense to apply')
     ap.add_argument('--include-baseline', action='store_true', help='Include baseline (no defense) rows alongside defended rows')
     ap.add_argument('--out', default='results/robustness.csv')
+    ap.add_argument('--model-glob', default='models/*.joblib', help='Glob for model selection')
     args = ap.parse_args()
 
     os.makedirs('results', exist_ok=True)
@@ -64,7 +65,7 @@ def main():
         labels = te['label'].values
 
         rows = []
-        for p in sorted(glob.glob('models/*.joblib')):
+        for p in sorted(glob.glob(args.model_glob)):
             name = os.path.basename(p)
             m = joblib.load(p)
             # eval clean
