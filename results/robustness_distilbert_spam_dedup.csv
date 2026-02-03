@@ -1,0 +1,17 @@
+attack,dataset,model,defense,f1_clean,f1_attacked,delta_f1,train_domain,seed,notes
+clean,spamassassin,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+obfuscate,spamassassin,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+paraphrase_like,spamassassin,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+prompt_injection,spamassassin,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+clean,spamassassin,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+obfuscate,spamassassin,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+paraphrase_like,spamassassin,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+prompt_injection,spamassassin,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+clean,sms,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+obfuscate,sms,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+paraphrase_like,sms,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+prompt_injection,sms,distilbert_ft,none,0.0,0.0,0.0,spamassassin,0,nn_baseline
+clean,sms,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+obfuscate,sms,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+paraphrase_like,sms,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline
+prompt_injection,sms,distilbert_ft,normalize,0.0,0.0,0.0,spamassassin,0,nn_baseline

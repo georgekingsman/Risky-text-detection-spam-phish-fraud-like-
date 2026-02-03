@@ -93,6 +93,8 @@ We re-run robustness under the deduplicated splits and compare against the origi
 - Dedup robustness plot: [report/fig_robustness_delta_dedup.png](report/fig_robustness_delta_dedup.png)
 - Dedup effect (ΔF1 change): [results/dedup_effect.csv](results/dedup_effect.csv)
 
+The dedup robustness table also includes DistilBERT fine-tuning (train-domain specific) under the same attack/defense suite for a neural anchor comparison.
+
 ### 7.3 Adversarial baseline (TextAttack)
 We run a CPU-only TextAttack baseline using DeepWordBug on 200 sampled test messages per dataset. Results are saved in:
 - [results/textattack_sms.csv](results/textattack_sms.csv)

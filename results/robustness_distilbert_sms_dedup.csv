@@ -1,0 +1,17 @@
+attack,dataset,model,defense,f1_clean,f1_attacked,delta_f1,train_domain,seed,notes
+clean,sms,distilbert_ft,none,0.991869918699187,0.991869918699187,0.0,sms,0,nn_baseline
+obfuscate,sms,distilbert_ft,none,0.991869918699187,0.9491525423728814,-0.04271737632630557,sms,0,nn_baseline
+paraphrase_like,sms,distilbert_ft,none,0.991869918699187,0.9666666666666667,-0.025203252032520274,sms,0,nn_baseline
+prompt_injection,sms,distilbert_ft,none,0.991869918699187,0.9838709677419355,-0.00799895095725145,sms,0,nn_baseline
+clean,sms,distilbert_ft,normalize,0.991869918699187,0.991869918699187,0.0,sms,0,nn_baseline
+obfuscate,sms,distilbert_ft,normalize,0.991869918699187,0.9666666666666667,-0.025203252032520274,sms,0,nn_baseline
+paraphrase_like,sms,distilbert_ft,normalize,0.991869918699187,0.957983193277311,-0.033886725421875985,sms,0,nn_baseline
+prompt_injection,sms,distilbert_ft,normalize,0.991869918699187,0.9838709677419355,-0.00799895095725145,sms,0,nn_baseline
+clean,spamassassin,distilbert_ft,none,0.5595238095238095,0.5595238095238095,0.0,sms,0,nn_baseline
+obfuscate,spamassassin,distilbert_ft,none,0.5595238095238095,0.2692307692307692,-0.2902930402930403,sms,0,nn_baseline
+paraphrase_like,spamassassin,distilbert_ft,none,0.5595238095238095,0.3898305084745763,-0.16969330104923325,sms,0,nn_baseline
+prompt_injection,spamassassin,distilbert_ft,none,0.5595238095238095,0.5662650602409639,0.006741250717154368,sms,0,nn_baseline
+clean,spamassassin,distilbert_ft,normalize,0.5595238095238095,0.5595238095238095,0.0,sms,0,nn_baseline
+obfuscate,spamassassin,distilbert_ft,normalize,0.5595238095238095,0.3333333333333333,-0.22619047619047622,sms,0,nn_baseline
+paraphrase_like,spamassassin,distilbert_ft,normalize,0.5595238095238095,0.3865546218487395,-0.17296918767507002,sms,0,nn_baseline
+prompt_injection,spamassassin,distilbert_ft,normalize,0.5595238095238095,0.5662650602409639,0.006741250717154368,sms,0,nn_baseline

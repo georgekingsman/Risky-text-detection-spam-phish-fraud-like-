@@ -1,13 +1,17 @@
 dataset,split,model,seed,f1,precision,recall,roc_auc,notes
 sms_uci_dedup,test,tfidf_word_lr,,0.8928571428571429,1.0,0.8064516129032258,0.9908625992418282,train=sms_uci_dedup in-domain
 sms_uci_dedup,test,tfidf_char_svm,,0.9836065573770492,1.0,0.967741935483871,0.9967098204706388,train=sms_uci_dedup in-domain
-sms_uci_dedup,test,minilm_lr,,0.9230769230769231,0.9818181818181818,0.8709677419354839,0.9923825191331093,train=sms_uci_dedup in-domain
-spamassassin_dedup,test,tfidf_word_lr,,0.47232472324723246,0.5039370078740157,0.4444444444444444,0.4700191570881226,train=spamassassin_dedup in-domain
-spamassassin_dedup,test,tfidf_char_svm,,0.4548736462093863,0.47368421052631576,0.4375,0.46728927203065135,train=spamassassin_dedup in-domain
-spamassassin_dedup,test,minilm_lr,,0.4153846153846154,0.46551724137931033,0.375,0.4923850574712644,train=spamassassin_dedup in-domain
-spamassassin_dedup,test,tfidf_word_lr,,0.08917197452229299,0.5384615384615384,0.04861111111111111,0.5190613026819924,train=sms_uci_dedup cross-domain
-spamassassin_dedup,test,tfidf_char_svm,,0.4496124031007752,0.5087719298245614,0.4027777777777778,0.49607279693486594,train=sms_uci_dedup cross-domain
-spamassassin_dedup,test,minilm_lr,,0.11904761904761904,0.4166666666666667,0.06944444444444445,0.5269636015325669,train=sms_uci_dedup cross-domain
-sms_uci_dedup,test,tfidf_word_lr,,0.3041825095057034,0.19900497512437812,0.6451612903225806,0.6817287747657536,train=spamassassin_dedup cross-domain
-sms_uci_dedup,test,tfidf_char_svm,,0.24203821656050956,0.15079365079365079,0.6129032258064516,0.5828982190115156,train=spamassassin_dedup cross-domain
-sms_uci_dedup,test,minilm_lr,,0.17050691244239632,0.09946236559139784,0.5967741935483871,0.36842858164652026,train=spamassassin_dedup cross-domain
+sms_uci_dedup,test,minilm_lr,,0.9230769230769232,0.9818181818181818,0.8709677419354839,0.9923825191331092,train=sms_uci_dedup in-domain
+spamassassin_dedup,test,tfidf_word_lr,,0.4723247232472324,0.5039370078740157,0.4444444444444444,0.4700191570881226,train=spamassassin_dedup in-domain
+spamassassin_dedup,test,tfidf_char_svm,,0.4548736462093863,0.4736842105263157,0.4375,0.4672892720306513,train=spamassassin_dedup in-domain
+spamassassin_dedup,test,minilm_lr,,0.4153846153846154,0.4655172413793103,0.375,0.4923850574712644,train=spamassassin_dedup in-domain
+spamassassin_dedup,test,tfidf_word_lr,,0.0891719745222929,0.5384615384615384,0.0486111111111111,0.5190613026819924,train=sms_uci_dedup cross-domain
+spamassassin_dedup,test,tfidf_char_svm,,0.4496124031007752,0.5087719298245614,0.4027777777777778,0.4960727969348659,train=sms_uci_dedup cross-domain
+spamassassin_dedup,test,minilm_lr,,0.119047619047619,0.4166666666666667,0.0694444444444444,0.5269636015325669,train=sms_uci_dedup cross-domain
+sms_uci_dedup,test,tfidf_word_lr,,0.3041825095057034,0.1990049751243781,0.6451612903225806,0.6817287747657536,train=spamassassin_dedup cross-domain
+sms_uci_dedup,test,tfidf_char_svm,,0.2420382165605095,0.1507936507936507,0.6129032258064516,0.5828982190115156,train=spamassassin_dedup cross-domain
+sms_uci_dedup,test,minilm_lr,,0.1705069124423963,0.0994623655913978,0.5967741935483871,0.3684285816465202,train=spamassassin_dedup cross-domain
+sms_dedup,test,distilbert_ft,,0.991869918699187,1.0,0.9838709677419356,0.9998569487161146,train=sms_dedup in-domain
+spamassassin_dedup,test,distilbert_ft,,0.5481927710843374,0.4840425531914893,0.6319444444444444,0.4884099616858237,train=sms_dedup cross-domain
+spamassassin_dedup,test,distilbert_ft,,0.0,0.0,0.0,0.4601532567049808,train=spamassassin_dedup in-domain
+sms_dedup,test,distilbert_ft,,0.0303030303030303,0.25,0.0161290322580645,0.8901723767970818,train=spamassassin_dedup cross-domain
