@@ -1,0 +1,3 @@
+dataset,n_original,n_exact_dup,n_near_dup,n_total_removed,n_deduplicated,retention_rate_%,orig_train_test_overlap,orig_train_val_overlap,orig_val_test_overlap,dedup_train_test_overlap,dedup_train_val_overlap,dedup_val_test_overlap,total_orig_overlap,total_dedup_overlap,overlap_reduction,overlap_reduction_%
+SMS (UCI),5574,415,33,448,5126,92.0,69,60,10,0,0,0,139,0,139,100.0
+SpamAssassin,6008,3070,54,3124,2884,48.0,494,491,58,0,0,0,1043,0,1043,100.0

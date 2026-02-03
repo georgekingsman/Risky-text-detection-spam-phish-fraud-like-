@@ -113,6 +113,9 @@ distilbert_multiseed:
 generate_sensitivity_tables:
 	$(PY) -m src.generate_sensitivity_tables
 
+generate_leakage_table:
+	$(PY) src/generate_leakage_table.py
+
 paper_repro:
 	$(PY) -m src.dedup_split --data-dir dataset/processed --out-dir dataset/dedup/processed --report results/dedup_report_sms.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
 	$(PY) -m src.dedup_split --data-dir dataset/spamassassin/processed --out-dir dataset/spamassassin/dedup/processed --report results/dedup_report_spamassassin.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
@@ -139,6 +142,7 @@ paper_repro:
 	$(PY) -m src.sensitivity_analysis_dedup
 	$(PY) src/train_distilbert_multiseed.py --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup_multiseed --results_csv results/distilbert_multiseed.csv --seeds 0 1 2 --epochs 2 --batch 8 --max_len 128
 	$(PY) -m src.generate_sensitivity_tables
+	$(PY) src/generate_leakage_table.py
 	$(PY) -m src.generate_paper_tables
 	$(PY) -m src.generate_paper_assets
 
