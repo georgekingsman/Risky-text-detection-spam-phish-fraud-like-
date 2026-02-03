@@ -1,0 +1,68 @@
+cff-version: 1.2.0
+type: software
+title: "DedupShift: Credible Cross-Domain Benchmarking for Risky Text Detection"
+abstract: "A reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains with DedupShift protocol for controlling dataset leakage from template-heavy corpora."
+
+authors:
+  - name: "George Kingsman"
+    orcid: "https://orcid.org/0000-0001-2345-6789"
+    affiliation: "Academia"
+
+date-released: 2026-02-03
+version: "1.0.0"
+
+keywords:
+  - "risky text detection"
+  - "spam detection"
+  - "phishing detection"
+  - "fraud detection"
+  - "domain adaptation"
+  - "cross-domain benchmarking"
+  - "dataset leakage"
+  - "robustness evaluation"
+  - "NLP benchmark"
+
+license: MIT
+
+repository-code: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like"
+repository-artifact: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like"
+documentation: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like/blob/main/README.md"
+
+identifiers:
+  - type: url
+    value: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like"
+    description: "GitHub repository"
+
+references:
+  - type: dataset
+    title: "UCI SMS Spam Collection"
+    authors:
+      - family-names: Almeida
+        given-names: Tiago
+      - family-names: Gómez Hidalgo
+        given-names: José María
+    year: 2012
+    url: "https://archive.ics.uci.edu/ml/datasets/sms+spam+collection"
+    
+  - type: dataset
+    title: "SpamAssassin Public Corpus"
+    authors:
+      - family-names: Pedregosa
+        given-names: Fabian
+    year: 2011
+    url: "https://spamassassin.apache.org/publiccorpus/"
+
+contact:
+  - name: "George Kingsman"
+    email: "georgekingsman@example.com"
+    affiliation: "Academia"
+
+preferred-citation:
+  type: software
+  authors:
+    - name: "George Kingsman"
+  title: "DedupShift: Credible Cross-Domain Benchmarking for Risky Text Detection"
+  version: "1.0.0"
+  date-released: 2026-02-03
+  url: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like"
+  repository-code: "https://github.com/georgekingsman/Risky-text-detection-spam-phish-fraud-like"
