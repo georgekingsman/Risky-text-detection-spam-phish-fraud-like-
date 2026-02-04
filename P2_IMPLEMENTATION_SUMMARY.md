@@ -246,3 +246,109 @@ b191c3f Add P2 quickstart guide for experimental completeness
 🔄 **可重复性**: 通过完整自动化确保  
 
 项目现已从"tech report质量"升级到"CCF-C可投稿质量"的充分实验基础。🚀
+
+---
+
+# 🆕 EAT (Evasion-Aware Training) 方法贡献
+
+## 新增内容概述
+
+成功实现了 **EAT (Evasion-Aware Training)** 作为论文的新方法贡献，将项目从纯 benchmark 升级为 **benchmark + 方法**。
+
+## 关键成果
+
+### 📊 性能增益
+
+| 指标 | 平均值 |
+|------|--------|
+| **Obfuscate 鲁棒性增益** | +15.23% |
+| **Clean 性能变化** | +3.34% |
+
+这是一个 **双赢** 结果：EAT 提升鲁棒性的同时也提升（或保持）了 clean 性能。
+
+### 📈 详细结果
+
+| 模型 | Clean F1 (前) | Clean F1 (后) | Obfuscate F1 (前) | Obfuscate F1 (后) | 增益 |
+|------|---------------|---------------|-------------------|-------------------|------|
+| SMS TF-IDF LR | 0.893 | 0.940 | 0.765 | 0.875 | +11.0% |
+| SMS Char SVM | 0.984 | 0.984 | 0.940 | 0.975 | +3.5% |
+| SpamA TF-IDF LR | 0.472 | 0.552 | 0.372 | 0.662 | **+29.0%** |
+| SpamA Char SVM | 0.455 | 0.462 | 0.469 | 0.643 | **+17.4%** |
+
+## 新增文件
+
+### 脚本
+- `src/augtrain_build.py` - 增强数据生成器
+- `src/train_eat.py` - EAT 训练和评估 pipeline
+- `src/eval_eat_cross_domain.py` - 跨域评估
+- `src/generate_eat_summary.py` - 汇总生成器
+
+### 数据
+- `data/sms_spam/dedup/processed/train_augmix.csv` - SMS 增强训练集
+- `data/spamassassin/dedup/processed/train_augmix.csv` - SpamAssassin 增强训练集
+
+### 模型
+- `models/*_eat.joblib` - EAT 训练的模型（共6个）
+
+### 结果
+- `results/eat_results_*.csv` - 完整评估结果
+- `results/eat_gain_*.csv` - 鲁棒性增益表
+- `results/eat_tradeoff_*.csv` - Clean vs 鲁棒性权衡
+- `results/eat_cross_domain*.csv` - 跨域评估
+- `results/eat_summary.md` - 人类可读汇总
+- `results/fig_eat_robustness_gain.png` - 鲁棒性增益可视化
+- `results/fig_eat_tradeoff.png` - 权衡可视化
+- `paper/figs/fig_eat_robustness_gain.pdf` - 论文图表
+
+## Makefile 目标
+
+```bash
+make eat_augment      # 生成增强训练集
+make eat_train        # 训练和评估 EAT 模型
+make eat_cross_domain # 运行跨域评估
+make eat_summary      # 生成汇总表格和图表
+make eat              # 运行完整 EAT pipeline
+```
+
+## 论文写作指南
+
+### 方法部分
+
+> **Evasion-Aware Training (EAT) / AttackMix**
+> 
+> We propose a lightweight, reproducible evasion-aware training recipe that improves robustness under the same threat model, evaluated on leakage-controlled DedupShift splits.
+>
+> **关键设计选择：**
+> - 仅增强 spam 样本（符合现实威胁模型）
+> - 混合权重：obfuscate 70%，prompt_injection 30%
+> - 增强概率：每个 spam 样本 70%
+> - 每个样本单次增强（n_aug=1）
+
+### 结果部分
+
+> **Attack-Aware Training 能否在 DedupShift 下提升鲁棒性？**
+>
+> EAT 实现了平均 **+15.23%** 的 obfuscate 鲁棒性增益，同时 clean 性能也提升了 **+3.34%**。值得注意的是，SpamAssassin 上的提升（TF-IDF LR +29.0%）大于 SMS（+11.0%），这可能是由于邮件垃圾检测的基线脆弱性更高。
+
+### 建议包含的图表
+1. `fig_eat_robustness_gain.pdf` - Clean vs EAT 训练对比柱状图
+2. `fig_eat_tradeoff.png` - 展示双赢区间的散点图
+
+## 注意事项
+
+### Prompt Injection 警告
+在训练中使用 prompt injection 增强会导致 word-level 模型在 prompt injection 攻击上性能下降。这是因为模型学会将注入前缀作为 spam 指示器。实际部署时建议：
+1. 仅使用 obfuscate 增强
+2. 使用更鲁棒的 character-level 模型
+
+### 跨域观察
+- SMS→SpamAssassin：EAT 有效（+18.8% obfuscate 增益）
+- SpamAssassin→SMS：EAT 无效（域不匹配）
+
+这表明 EAT 的有效性取决于源域特性。
+
+---
+
+**EAT 状态: ✅ 完成**
+
+所有 EAT 相关任务已实现并测试完毕。

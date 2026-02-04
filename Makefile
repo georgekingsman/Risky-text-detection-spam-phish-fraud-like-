@@ -119,6 +119,37 @@ generate_leakage_table:
 generate_dedup_robustness_summary:
 	$(PY) src/generate_dedup_robustness_summary.py
 
+# ============================================================
+# EAT (Evasion-Aware Training) - Attack-Aware Augmentation
+# ============================================================
+
+eat_augment:
+	$(PY) -m src.augtrain_build \
+	  --in_csv data/sms_spam/dedup/processed/train.csv \
+	  --out_csv data/sms_spam/dedup/processed/train_augmix.csv \
+	  --seed 0 --aug_prob_spam 0.7 --n_aug 1 \
+	  --mix "obfuscate:0.7,prompt_injection:0.3"
+	$(PY) -m src.augtrain_build \
+	  --in_csv data/spamassassin/dedup/processed/train.csv \
+	  --out_csv data/spamassassin/dedup/processed/train_augmix.csv \
+	  --seed 0 --aug_prob_spam 0.7 --n_aug 1 \
+	  --mix "obfuscate:0.7,prompt_injection:0.3"
+
+eat_train:
+	$(PY) -m src.train_eat --data-dir data/sms_spam/dedup/processed --prefix sms_dedup
+	$(PY) -m src.train_eat --data-dir data/spamassassin/dedup/processed --prefix spamassassin_dedup
+
+eat_cross_domain:
+	$(PY) -m src.eval_eat_cross_domain
+
+eat_summary:
+	$(PY) -m src.generate_eat_summary
+
+eat: eat_augment eat_train eat_cross_domain eat_summary
+	@echo "EAT pipeline complete. Results in results/eat_*.csv"
+
+# ============================================================
+
 paper_repro:
 	$(PY) -m src.dedup_split --data-dir dataset/processed --out-dir dataset/dedup/processed --report results/dedup_report_sms.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
 	$(PY) -m src.dedup_split --data-dir dataset/spamassassin/processed --out-dir dataset/spamassassin/dedup/processed --report results/dedup_report_spamassassin.csv --text-col text --label-col label --seed 0 --near --h-thresh 3

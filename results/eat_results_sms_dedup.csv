@@ -1,0 +1,17 @@
+model,training,attack,f1,precision,recall
+sms_dedup_tfidf_word_lr,clean,clean,0.8928571428571429,1.0,0.8064516129032258
+sms_dedup_tfidf_word_lr,clean,obfuscate,0.7647058823529411,0.975,0.6290322580645161
+sms_dedup_tfidf_word_lr,clean,prompt_injection,0.819047619047619,1.0,0.6935483870967742
+sms_dedup_tfidf_word_lr,clean,paraphrase_like,0.8623853211009175,1.0,0.7580645161290323
+sms_dedup_tfidf_char_svm,clean,clean,0.9836065573770492,1.0,0.967741935483871
+sms_dedup_tfidf_char_svm,clean,obfuscate,0.9401709401709402,1.0,0.8870967741935484
+sms_dedup_tfidf_char_svm,clean,prompt_injection,0.9836065573770492,1.0,0.967741935483871
+sms_dedup_tfidf_char_svm,clean,paraphrase_like,0.9836065573770492,1.0,0.967741935483871
+sms_dedup_tfidf_word_lr,eat,clean,0.9401709401709402,1.0,0.8870967741935484
+sms_dedup_tfidf_word_lr,eat,obfuscate,0.875,0.98,0.7903225806451613
+sms_dedup_tfidf_word_lr,eat,prompt_injection,0.3177083333333333,0.18944099378881987,0.9838709677419355
+sms_dedup_tfidf_word_lr,eat,paraphrase_like,0.9026548672566371,1.0,0.8225806451612904
+sms_dedup_tfidf_char_svm,eat,clean,0.9836065573770492,1.0,0.967741935483871
+sms_dedup_tfidf_char_svm,eat,obfuscate,0.9752066115702479,1.0,0.9516129032258065
+sms_dedup_tfidf_char_svm,eat,prompt_injection,0.5422222222222223,0.37423312883435583,0.9838709677419355
+sms_dedup_tfidf_char_svm,eat,paraphrase_like,0.9836065573770492,1.0,0.967741935483871
