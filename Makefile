@@ -140,12 +140,15 @@ eat_train:
 	$(PY) -m src.train_eat --data-dir data/spamassassin/dedup/processed --prefix spamassassin_dedup
 
 eat_cross_domain:
-	$(PY) -m src.eval_eat_cross_domain
+	$(PY) -m src.eval_eat_cross_domain --full-threat-model
+
+eat_calibration:
+	$(PY) -m src.eval_eat_calibration
 
 eat_summary:
 	$(PY) -m src.generate_eat_summary
 
-eat: eat_augment eat_train eat_cross_domain eat_summary
+eat: eat_augment eat_train eat_cross_domain eat_calibration eat_summary
 	@echo "EAT pipeline complete. Results in results/eat_*.csv"
 
 # ============================================================

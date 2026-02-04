@@ -80,6 +80,8 @@ def evaluate_minilm_model(model_path, test_df, attack=None, seed=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--skip-minilm", action="store_true")
+    ap.add_argument("--full-threat-model", action="store_true", 
+                    help="Run all attacks (obfuscate, paraphrase_like, prompt_injection)")
     args = ap.parse_args()
 
     os.makedirs("results", exist_ok=True)
@@ -99,7 +101,12 @@ def main():
         model_configs.append(("minilm_lr", evaluate_minilm_model))
 
     training_modes = ["", "_eat"]  # Clean and EAT
-    attacks = ["clean", "obfuscate"]
+    
+    # Full threat model coverage
+    if args.full_threat_model:
+        attacks = ["clean", "obfuscate", "paraphrase_like", "prompt_injection"]
+    else:
+        attacks = ["clean", "obfuscate"]
 
     results = []
 
