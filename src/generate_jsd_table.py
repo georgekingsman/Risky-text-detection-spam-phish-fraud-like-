@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--in_csv", default="results/domain_shift_3domain.csv")
+    ap.add_argument("--in_csv", default="results/domain_shift_js_3domains.csv")
     ap.add_argument("--out_tex", default="paper/tables/domain_shift_3domain.tex")
     args = ap.parse_args()
     
