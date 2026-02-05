@@ -1,0 +1,5 @@
+Train,Test,Type,TF-IDF Word LR,TF-IDF Char SVM,MiniLM+LR,TF-IDF Word LR (EAT)
+SMS,SMS,In-domain,0.8929,0.9836,0.9231,0.9402
+SpamAssassin,SpamAssassin,In-domain,0.4723,0.4549,0.4154,0.5519
+SMS,SpamAssassin,Cross-domain,0.0892,0.4496,0.119,0.2431
+SpamAssassin,SMS,Cross-domain,0.3042,0.242,0.1705,0.2157

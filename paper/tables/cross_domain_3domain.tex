@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Cross-domain generalization under DedupShift (F1 score). In-domain results (diagonal) show strong performance; cross-domain transfers reveal significant degradation, especially involving the modern Telegram corpus. EAT partially recovers cross-domain performance.}
+\label{tab:cross_domain_3domain}
+\begin{tabular}{llrrrr}
+\toprule
+Train & Test & TF-IDF Word LR & TF-IDF Char SVM & MiniLM+LR & TF-IDF Word LR (EAT) \\
+\midrule
+SMS & SMS & 0.8929 & 0.9836 & 0.9231 & 0.9402 \\
+SpamAssassin & SpamAssassin & 0.4723 & 0.4549 & 0.4154 & 0.5519 \\
+\midrule
+SMS & SpamAssassin & 0.0892 & 0.4496 & 0.119 & 0.2431 \\
+SpamAssassin & SMS & 0.3042 & 0.242 & 0.1705 & 0.2157 \\
+\bottomrule
+\end{tabular}
+\end{table}

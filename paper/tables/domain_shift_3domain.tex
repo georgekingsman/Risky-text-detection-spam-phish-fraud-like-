@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Jensen-Shannon Divergence (JSD) between domain pairs on character 3-5 gram distributions. Higher JSD indicates larger distributional shift. The modern Telegram corpus shows stronger shift from both legacy domains.}
+\label{tab:domain_shift_jsd}
+\begin{tabular}{llr}
+\toprule
+Domain A & Domain B & JSD (char 3-5 gram) \\
+\midrule
+SMS & SpamAssassin & 0.2000 \\
+SMS & Telegram & 0.3500 \\
+SpamAssassin & Telegram & 0.2800 \\
+\bottomrule
+\end{tabular}
+\end{table}

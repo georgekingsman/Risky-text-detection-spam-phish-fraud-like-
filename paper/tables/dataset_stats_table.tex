@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Dataset statistics and DedupShift retention. Dedup retention shows the percentage of samples retained after near-duplicate removal. Split leakage measures exact text overlap between train and test splits before/after deduplication.}
+\label{tab:dataset_stats}
+\begin{tabular}{lllrrrrr}
+\toprule
+Dataset & Source & \#Samples & Spam\% & Avg tokens & Dedup ret. & Leakage (before/after) \\
+\midrule
+SMS (UCI) & SMSSpamCollection & 5,574 & 13.4\% & 15.6 & 92.0\% & 12.9\% / 0.0\% \\
+SpamAssassin & Apache SpamAssassin & 6,008 & 50.0\% & 256.2 & 48.0\% & 83.03\% / 0.0\% \\
+Telegram & Kaggle (2024) & 0 & 0.0\% & 0.0 & 0.0\% & 0.0\% / 0.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}

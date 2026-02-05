@@ -29,18 +29,39 @@ from sklearn.metrics import f1_score
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def predict_with_model(model, texts: List[str]) -> np.ndarray:
+    """Predict using any model format (sklearn pipeline, dict with tfidf+clf, dict with embed_model+clf)."""
+    # Handle dict-based models
+    if isinstance(model, dict):
+        if "tfidf" in model and "clf" in model:
+            # TF-IDF based pipeline
+            X = model["tfidf"].transform(texts)
+            return model["clf"].predict(X)
+        elif "embed_model" in model and "clf" in model:
+            # Embedding-based pipeline (MiniLM)
+            from sentence_transformers import SentenceTransformer
+            embed_model = SentenceTransformer(model["embed_model"])
+            embeddings = embed_model.encode(texts, show_progress_bar=False)
+            return model["clf"].predict(embeddings)
+        else:
+            raise ValueError(f"Unknown dict model format with keys: {list(model.keys())}")
+    else:
+        # Standard sklearn pipeline
+        return model.predict(texts)
+
+
 def measure_inference_time(model, texts: List[str], n_runs: int = 3) -> Dict:
     """Measure inference latency and throughput for a model."""
     # Warm-up run
     try:
-        _ = model.predict(texts[:10])
+        _ = predict_with_model(model, texts[:10])
     except Exception:
         pass
     
     latencies = []
     for _ in range(n_runs):
         start = time.perf_counter()
-        _ = model.predict(texts)
+        _ = predict_with_model(model, texts)
         end = time.perf_counter()
         latencies.append(end - start)
     
@@ -73,10 +94,11 @@ def main():
     args = ap.parse_args()
     
     # Dataset paths
+    # Note: SMS uses dataset/dedup/processed/, SpamAssassin uses dataset/spamassassin/dedup/processed/
     dataset_paths = {
-        "sms": ROOT / "dataset/sms_uci/dedup/processed/data.csv",
-        "spamassassin": ROOT / "dataset/spamassassin/dedup/processed/data.csv",
-        "telegram": ROOT / "dataset/telegram_spam_ham/dedup/processed/data.csv",
+        "sms": ROOT / "dataset/dedup/processed/all.csv",
+        "spamassassin": ROOT / "dataset/spamassassin/dedup/processed/all.csv",
+        "telegram": ROOT / "dataset/telegram_spam_ham/dedup/processed/all.csv",
     }
     
     # Model configurations

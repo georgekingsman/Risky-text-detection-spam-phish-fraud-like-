@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Robustness summary: F1 scores under different attacks (no defense). Lower F1 under attacks indicates higher vulnerability. EAT models show improved robustness compared to baseline.}
+\label{tab:robustness_summary}
+\begin{tabular}{llrrrr}
+\toprule
+Dataset & Model & Clean & Obfuscate & Paraphrase & Prompt Inj. \\
+\midrule
+SMS & MiniLM Lr & 0.547 & 0.512 & 0.550 & 0.537 \\
+SMS & TF-IDF Char Svm & 0.613 & 0.604 & 0.604 & 0.588 \\
+SMS & TF-IDF Word Lr & 0.591 & 0.554 & 0.562 & 0.580 \\
+\midrule
+SpamAssassin & MiniLM Lr & 0.267 & 0.261 & 0.260 & 0.334 \\
+SpamAssassin & TF-IDF Char Svm & 0.452 & 0.436 & 0.451 & 0.480 \\
+SpamAssassin & TF-IDF Word Lr & 0.387 & 0.376 & 0.383 & 0.380 \\
+\bottomrule
+\end{tabular}
+\end{table}

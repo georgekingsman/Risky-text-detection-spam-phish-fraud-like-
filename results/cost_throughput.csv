@@ -1,0 +1,5 @@
+model,model_file,dataset,latency_ms,throughput_msg_s,clean_f1,robust_f1_obfuscate
+TF-IDF Word LR,sms_dedup_tfidf_word_lr.joblib,sms,0.007,134401.1,0.8929,0.8077
+TF-IDF Char SVM,sms_dedup_tfidf_char_svm.joblib,sms,0.043,23165.1,0.9836,0.958
+MiniLM+LR,sms_dedup_minilm_lr.joblib,sms,24.205,41.3,0.9231,0.8727
+TF-IDF Word LR (EAT),sms_dedup_tfidf_word_lr_eat.joblib,sms,0.017,58855.5,,

@@ -40,9 +40,28 @@ def load_data(csv_path: str) -> pd.DataFrame:
 
 
 def evaluate_model(model, X_test, y_test) -> float:
-    """Evaluate model and return F1 score."""
+    """Evaluate model and return F1 score. Handles dict-based pipelines."""
     try:
-        y_pred = model.predict(X_test)
+        # Handle dict-based models (TF-IDF + clf or embedding + clf)
+        if isinstance(model, dict):
+            if "tfidf" in model and "clf" in model:
+                # TF-IDF pipeline
+                X_vec = model["tfidf"].transform(X_test)
+                y_pred = model["clf"].predict(X_vec)
+            elif "embed_model" in model and "clf" in model:
+                # Embedding pipeline (MiniLM)
+                from sentence_transformers import SentenceTransformer
+                embed_model_name = model.get("embed_model", "all-MiniLM-L6-v2")
+                embedder = SentenceTransformer(embed_model_name)
+                X_vec = embedder.encode(X_test, batch_size=64, show_progress_bar=False, normalize_embeddings=True)
+                y_pred = model["clf"].predict(X_vec)
+            else:
+                print(f"  Unknown dict model format: {list(model.keys())}")
+                return 0.0
+        else:
+            # Standard sklearn pipeline
+            y_pred = model.predict(X_test)
+        
         return f1_score(y_test, y_pred, zero_division=0)
     except Exception as e:
         print(f"  Evaluation error: {e}")
@@ -56,19 +75,20 @@ def main():
     args = ap.parse_args()
     
     # Dataset configurations
+    # Note: SMS uses dataset/dedup/processed/, SpamAssassin uses dataset/spamassassin/dedup/processed/
     datasets = {
         "sms": {
-            "data_path": ROOT / "dataset/sms_uci/dedup/processed/data.csv",
+            "data_path": ROOT / "dataset/dedup/processed/all.csv",
             "model_prefix": "sms_dedup",
             "display": "SMS",
         },
         "spamassassin": {
-            "data_path": ROOT / "dataset/spamassassin/dedup/processed/data.csv",
+            "data_path": ROOT / "dataset/spamassassin/dedup/processed/all.csv",
             "model_prefix": "spamassassin_dedup",
             "display": "SpamAssassin",
         },
         "telegram": {
-            "data_path": ROOT / "dataset/telegram_spam_ham/dedup/processed/data.csv",
+            "data_path": ROOT / "dataset/telegram_spam_ham/dedup/processed/all.csv",
             "model_prefix": "telegram_dedup",
             "display": "Telegram",
         },
