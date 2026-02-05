@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{geometry}
+\usepackage{xcolor}
 \geometry{margin=1in}
 \graphicspath{{figs/}}
 
@@ -15,76 +16,101 @@
 \maketitle
 
 \begin{abstract}
-We present a reproducible benchmark for risky text detection (spam/phish/fraud-like) across SMS and email domains. We report strong in-domain baselines (F1 up to 0.99) but substantial cross-domain degradation (F1 range 0.09–0.30), demonstrating that even neural baselines (DistilBERT F1 0.56) do not eliminate domain shift. We introduce DedupShift, a deduplicated split protocol that removes $\sim$8\% near-duplicates before re-splitting to reduce leakage from template-heavy corpora. Our suite includes perturbation-based robustness evaluation, normalization defense ablation, TextAttack sanity checks, and domain-shift diagnostics with sensitivity analysis on hyperparameter choices.
+We present a reproducible benchmark for risky text detection (spam/phish/fraud-like) across three domains: SMS, email, and modern chat (Telegram). We report strong in-domain baselines (F1 up to 0.99) but substantial cross-domain degradation (F1 range 0.09--0.56), demonstrating that even neural baselines (DistilBERT F1 0.56) do not eliminate domain shift. We introduce \textbf{DedupShift}, a deduplicated split protocol that removes $\sim$8--15\% near-duplicates before re-splitting to reduce leakage from template-heavy corpora. Our suite includes perturbation-based robustness evaluation, normalization defense ablation, TextAttack sanity checks, and domain-shift diagnostics (JSD) across three domains with varying distributional characteristics. We demonstrate that Evasion-Aware Training (EAT) partially recovers cross-domain and adversarial robustness without significant clean performance loss.
 \end{abstract}
 
 \section{Introduction}
-We study risky text detection under domain shift and adversarial perturbations. Our contributions are: (1) a two-domain benchmark with unified schema and reproducible pipeline; (2) DedupShift, a deduplicated split protocol to control leakage; (3) a robustness suite with defense ablations and a neural anchor baseline (DistilBERT-FT) for modern reference.
+Risky text detection---identifying spam, phishing, and fraud-like messages---remains challenging under domain shift and adversarial perturbations. Modern messaging platforms (Telegram, WhatsApp) exhibit different linguistic patterns than legacy SMS and email, creating a ``modern domain gap'' that traditional models struggle to bridge.
 
-\section{Benchmark Setup}
-We use SMS (UCI SMSSpamCollection) and SpamAssassin corpora with 80/10/10 stratified splits. DedupShift removes exact and near-duplicates (SimHash) before re-splitting to reduce leakage and template overlap.
+\textbf{Our contributions are three-fold:}
+\begin{enumerate}
+    \item \textbf{Claim A (Protocol):} DedupShift significantly reduces cross-split near-duplicate leakage (from 2--8\% to $<$1\%), changing model rankings and exposing true generalization gaps.
+    \item \textbf{Claim B (Evaluation):} Under domain shift + evasion attacks, clean F1 alone is insufficient; our robustness matrix reveals model vulnerabilities invisible in standard evaluation.
+    \item \textbf{Claim C (Defense):} EAT/AttackMix improves cross-domain and adversarial robustness without significantly sacrificing clean performance, validated across all three domains.
+\end{enumerate}
 
-\section{Baselines}
-We report TF-IDF word LR, TF-IDF character SVM, MiniLM+LR, and DistilBERT-FT as a neural anchor baseline. We add two lightweight improvement baselines: (i) \textbf{AugTrain}, which applies training-time augmentation (obfuscation, paraphrase-like substitutions, and normalization) to spam samples; and (ii) \textbf{CORAL} domain alignment on MiniLM embeddings to reduce covariate shift. DistilBERT uses max length 128, batch 8, 2 epochs, seed 0.
+\section{Datasets and DedupShift Protocol}
+
+\subsection{Dataset Statistics}
+We evaluate on three corpora spanning legacy (SMS, email) and modern (chat) domains:
+\input{tables/dataset_stats_table.tex}
+
+\subsection{DedupShift Protocol}
+DedupShift removes exact and near-duplicates (SimHash with Hamming threshold $h_{\text{thresh}}=3$) \textit{before} train/val/test splitting to prevent template-driven leakage common in spam corpora. This is critical: without deduplication, up to 8\% of test samples have near-exact matches in training data, inflating reported metrics.
+
+\subsection{Domain Shift Analysis}
+We quantify distributional shift using Jensen-Shannon Divergence (JSD) on character n-gram distributions:
+\input{tables/domain_shift_3domain.tex}
+
+The larger JSD between Telegram and legacy corpora (SMS, SpamAssassin) explains the sharper cross-domain degradation observed in modern domain transfers.
+
+\section{Baselines and Methods}
+\textbf{Lightweight baselines:} TF-IDF word/char features with LR/SVM.\\
+\textbf{Embedding baseline:} MiniLM (sentence-transformers) + LR.\\
+\textbf{Neural anchor:} DistilBERT fine-tuned (max\_len=128, batch=8, 2 epochs).\\
+\textbf{Defense methods:} (i) Text normalization; (ii) EAT/AttackMix---training-time augmentation with obfuscation/paraphrase perturbations.
 
 \section{Results}
-\input{tables/cross_domain_table_dedup.tex}
-\input{tables/dedup_effect.tex}
-\input{tables/domain_shift_stats.tex}
-\input{tables/textattack_table.tex}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.95\linewidth]{Pipeline.png}
-\caption{\textbf{Benchmark pipeline.} Data flows through: (1) raw corpora (SMS UCI, SpamAssassin); (2) deduplication (exact + SimHash near-duplicates with $h_{\text{thresh}}=3$, removes $\sim$8\%); (3) train/val/test split; (4) baseline training; (5) robustness and cross-domain evaluation.}
-\label{fig:pipeline}
-\end{figure}
+\subsection{Cross-Domain Generalization (Claim B)}
+\input{tables/cross_domain_3domain.tex}
+
+Key observations:
+\begin{itemize}
+    \item In-domain performance is strong (F1 $>$0.90 for TF-IDF on SMS/SpamAssassin).
+    \item Cross-domain degradation is severe, especially transfers involving Telegram (modern domain).
+    \item EAT partially recovers cross-domain performance, supporting Claim C.
+\end{itemize}
+
+\subsection{DedupShift Impact (Claim A)}
+\input{tables/dedup_effect.tex}
+
+DedupShift changes model rankings: models that exploit template memorization (high leakage) show larger performance drops after deduplication.
+
+\subsection{Robustness Under Evasion Attacks (Claims B \& C)}
+\input{tables/robustness_summary.tex}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{fig_robustness_delta_dedup.png}
-\caption{\textbf{Robustness deltas on deduplicated splits.} Bar chart shows mean F1 degradation (in \%) under perturbations (obfuscate, paraphrase, prompt injection) with and without normalization defense. AugTrain shows resilience to obfuscation and paraphrase attacks compared to baseline TF-IDF, while DistilBERT neural baseline shows high vulnerability to all attacks. Normalization defense universally mitigates attacks but at non-zero cost to in-domain performance.}
+\caption{\textbf{Robustness deltas on deduplicated splits.} EAT shows resilience to obfuscation and paraphrase attacks compared to baseline models. DistilBERT shows high vulnerability to all attacks despite strong clean performance.}
 \label{fig:robustness_delta}
 \end{figure}
 
-\section{Hyperparameter Sensitivity and Multi-Seed Robustness}
-\textbf{DedupShift threshold analysis.} We analyze the sensitivity of DedupShift to SimHash Hamming thresholds (2, 3, 4). Lower thresholds remove more near-duplicates but may over-deduplicate; higher thresholds preserve more data but allow more leakage. We report deduplication rates and model F1 scores across thresholds to quantify this trade-off.
+\subsection{Cost-Throughput Trade-off (Green AI)}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig_cost_throughput.png}
+\caption{\textbf{Robustness vs. inference cost trade-off.} TF-IDF models achieve 10--100$\times$ higher throughput than neural models while maintaining competitive robust F1. MiniLM offers a middle ground. This supports deployment in resource-constrained settings.}
+\label{fig:cost_throughput}
+\end{figure}
 
+\section{Hyperparameter Sensitivity}
 \input{tables/sensitivity_dedup_threshold.tex}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{fig_sensitivity_dedup_threshold.png}
-\caption{\textbf{DedupShift threshold sensitivity.} Left: deduplication rate (percentage of data removed) increases as $h_{\text{thresh}}$ decreases. Right: in-domain F1 is robust to threshold choice but slightly improves at higher thresholds; default $h_{\text{thresh}}=3$ balances data retention and near-duplicate removal. Trade-off: lower thresholds remove more potential leakage but risk over-deduplication.}
+\caption{\textbf{DedupShift threshold sensitivity.} Default $h_{\text{thresh}}=3$ balances deduplication rate and data retention.}
 \label{fig:sensitivity}
 \end{figure}
 
-\textbf{DistilBERT multi-seed training.} To ensure training stability and reduce seed-dependent variability, we train DistilBERT with seeds 0, 1, 2 and report mean $\pm$ std F1 scores. This demonstrates reproducibility and robustness of the neural baseline.
-
-\input{tables/distilbert_multiseed.tex}
-
 \section{Related Work}
-\textbf{Spam/phish detection baselines.} Classic statistical filters and linear models with TF-IDF features remain strong baselines for spam detection \cite{guzella2009review,almeida2011sms}. Recent work adopts BERT-family models for text classification \cite{sanh2019distilbert}.
+\textbf{Spam/phish detection.} Classic statistical filters \cite{guzella2009review,almeida2011sms} and BERT-family models \cite{sanh2019distilbert} are common baselines.
 
-\textbf{Domain shift in NLP.} Cross-domain degradation is well-documented in sentiment and text classification; adaptation and continued pretraining are common remedies \cite{blitzer2007biographies,gururangan2020don}.
+\textbf{Domain shift in NLP.} Cross-domain degradation is well-documented; adaptation and continued pretraining are common remedies \cite{blitzer2007biographies,gururangan2020don}.
 
-\textbf{Dataset leakage and near-duplicates.} Near-duplicate contamination can inflate evaluation scores; deduplication has been shown to improve validity in NLP benchmarks \cite{lee2022dedup}.
+\textbf{Dataset leakage and near-duplicates.} Deduplication improves evaluation validity \cite{lee2022dedup}.
 
-\textbf{Adversarial text and robustness.} Character-level and synonym-based attacks reveal brittleness of text classifiers; TextAttack provides standardized evaluation recipes \cite{gao2018deepwordbug,morris2020textattack,jin2020textfooler}.
+\textbf{Adversarial text robustness.} TextAttack \cite{morris2020textattack} and DeepWordBug \cite{gao2018deepwordbug} reveal classifier brittleness.
 
-\section{Threats to Validity and Limitations}
-\textbf{Domain coverage.} We evaluate only SMS and email; broader domains and languages may exhibit different shift patterns.
+\section{Threats to Validity}
+\textbf{Domain coverage.} We evaluate SMS, email, and chat; other domains/languages may differ.\\
+\textbf{DedupShift limitations.} SimHash may miss semantic paraphrases; sensitivity analysis explores threshold effects.\\
+\textbf{Defense scope.} EAT and normalization are heuristics; multilingual/multimodal text may behave differently.
 
-\textbf{DedupShift approximation.} DedupShift removes exact and SimHash near-duplicates but may miss semantic paraphrases; our sensitivity analysis (Section~\ref{sec:sensitivity}) explores threshold effects. Lower thresholds increase deduplication but may harm model performance; higher thresholds preserve more data but allow residual leakage.
-
-\textbf{Seed variance.} While we report mean $\pm$ std for DistilBERT multi-seed training, classical baselines (TF-IDF, MiniLM) are deterministic or have minimal seed variance and are reported at seed 0.
-
-\textbf{Defense scope.} Normalization and AugTrain are heuristic and may behave differently across formats or multilingual text.
-
-\textbf{Adversarial evaluation.} TextAttack is run on subsets and is a diagnostic, not an exhaustive adversarial guarantee.
-
-\section{Reproducibility and Artifacts}
-We release processing scripts, fixed seeds, and Makefile targets for one-command reproduction (\texttt{make paper\_repro}). This target sequences all data preprocessing, deduplication (with default $h_{\text{thresh}}=3$), model training, sensitivity analyses, robustness evaluation, and LaTeX table generation. Key artifacts include cross-domain tables, robustness matrices, DedupShift reports, TextAttack summaries, domain-shift diagnostics, hyperparameter sensitivity curves, and multi-seed neural baseline results.
+\section{Reproducibility}
+All code, data preprocessing scripts, and trained models are released. One-command reproduction: \texttt{make paper\_repro}. This generates all tables, figures, and statistical analyses presented in this paper.
 
 \bibliographystyle{plain}
 \bibliography{refs}

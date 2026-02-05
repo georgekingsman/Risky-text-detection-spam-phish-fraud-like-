@@ -273,9 +273,15 @@ paper_repro:
 	# ========== DistilBERT ==========
 	$(PY) -m src.nn_distilbert_ft --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup --results_csv results/nn_distilbert_sms_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
 	$(PY) -m src.nn_distilbert_ft --train_csv dataset/spamassassin/dedup/processed/all.csv --train_domain spamassassin --eval_csvs dataset/spamassassin/dedup/processed/all.csv dataset/dedup/processed/all.csv --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128
+	@if [ -f dataset/telegram_spam_ham/dedup/processed/all.csv ]; then \
+	  $(PY) -m src.nn_distilbert_ft --train_csv dataset/telegram_spam_ham/dedup/processed/all.csv --train_domain telegram --eval_csvs dataset/telegram_spam_ham/dedup/processed/all.csv dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains telegram sms spamassassin --out_dir models/distilbert_telegram_dedup --results_csv results/nn_distilbert_telegram_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128; \
+	fi
 	$(PY) -m src.merge_distilbert_results
 	$(PY) -m src.nn_distilbert_ft --train_csv dataset/dedup/processed/all.csv --train_domain sms --eval_csvs dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains sms spamassassin --out_dir models/distilbert_sms_dedup --results_csv results/nn_distilbert_sms_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128 --robust --robust_out results/robustness_distilbert_sms_dedup.csv
 	$(PY) -m src.nn_distilbert_ft --train_csv dataset/spamassassin/dedup/processed/all.csv --train_domain spamassassin --eval_csvs dataset/spamassassin/dedup/processed/all.csv dataset/dedup/processed/all.csv --eval_domains spamassassin sms --out_dir models/distilbert_spam_dedup --results_csv results/nn_distilbert_spam_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128 --robust --robust_out results/robustness_distilbert_spam_dedup.csv
+	@if [ -f dataset/telegram_spam_ham/dedup/processed/all.csv ]; then \
+	  $(PY) -m src.nn_distilbert_ft --train_csv dataset/telegram_spam_ham/dedup/processed/all.csv --train_domain telegram --eval_csvs dataset/telegram_spam_ham/dedup/processed/all.csv dataset/dedup/processed/all.csv dataset/spamassassin/dedup/processed/all.csv --eval_domains telegram sms spamassassin --out_dir models/distilbert_telegram_dedup --results_csv results/nn_distilbert_telegram_train.csv --seed 0 --epochs 2 --batch 8 --grad_accum 2 --max_len 128 --robust --robust_out results/robustness_distilbert_telegram_dedup.csv; \
+	fi
 	$(PY) -m src.merge_robustness_distilbert
 	$(PY) -m src.plot_robustness_delta_dedup
 	$(PY) -m src.compare_robustness_dedup
@@ -289,6 +295,15 @@ paper_repro:
 	$(PY) -m src.generate_sensitivity_tables
 	$(PY) src/generate_leakage_table.py
 	$(PY) src/generate_dedup_robustness_summary.py
+	# ========== New Paper Tables (B-level) ==========
+	$(PY) src/generate_dataset_stats_table.py
+	$(PY) src/generate_cross_domain_3domain.py
+	$(PY) src/generate_jsd_table.py
+	$(PY) src/generate_robustness_summary_table.py
+	$(PY) src/cost_throughput_analysis.py --dataset sms
+	@if [ -f dataset/telegram_spam_ham/dedup/processed/test.csv ]; then \
+	  $(PY) src/cost_throughput_analysis.py --dataset telegram; \
+	fi
 	$(PY) -m src.generate_paper_tables
 	$(PY) -m src.generate_paper_assets
 
