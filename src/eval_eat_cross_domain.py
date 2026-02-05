@@ -86,11 +86,21 @@ def main():
 
     os.makedirs("results", exist_ok=True)
 
-    # Dataset paths
+    # Dataset paths - now supporting 3 domains
     datasets = {
         "sms": "data/sms_spam/dedup/processed",
         "spamassassin": "data/spamassassin/dedup/processed",
+        "telegram": "data/telegram_spam_ham/dedup/processed",
     }
+    
+    # Filter to only available datasets
+    available_datasets = {}
+    for name, path in datasets.items():
+        if Path(path).exists() and (Path(path) / "test.csv").exists():
+            available_datasets[name] = path
+        else:
+            print(f"[INFO] Dataset {name} not found at {path}, skipping")
+    datasets = available_datasets
 
     # Model configurations
     model_configs = [

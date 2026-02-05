@@ -36,6 +36,31 @@ This regenerates DedupShift splits, classical baselines, DistilBERT anchor, robu
 make paper_repro
 ```
 
+## Third Domain: Telegram (Optional)
+
+Add the **Telegram Spam or Ham** dataset from Kaggle as a third modern chat domain:
+
+```bash
+# 1. Download from Kaggle (requires kaggle API configured)
+make telegram_download
+
+# 2. Prepare and run full pipeline
+make telegram_full
+```
+
+Or run step-by-step:
+```bash
+make telegram_prepare     # Standardize raw CSV
+make telegram_dedup       # DedupShift split
+make telegram_train       # Train baselines
+make telegram_sync        # Sync to data/ directory
+make telegram_eat_augment # EAT augmentation
+make telegram_eat_train   # Train EAT models
+make telegram_robust      # Robustness evaluation
+```
+
+After integration, `make paper_repro` will automatically include Telegram if data is present.
+
 Includes optional P2 experimental completeness features:
 - **DedupShift sensitivity analysis** (h_thresh 2/3/4): `make sensitivity_dedup`
 - **DistilBERT multi-seed training** (seeds 0/1/2 with mean±std): `make distilbert_multiseed`

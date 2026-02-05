@@ -125,142 +125,119 @@ def main():
     out_path = ROOT / "results" / "results_dedup.csv"
     rows = []
 
+    # Dataset directories - now supporting 3 domains
     sms_dir = ROOT / "dataset" / "dedup" / "processed"
     spam_dir = ROOT / "dataset" / "spamassassin" / "dedup" / "processed"
+    telegram_dir = ROOT / "dataset" / "telegram_spam_ham" / "dedup" / "processed"
 
-    sms_models = {
-        "tfidf_word_lr": ROOT / "models" / "sms_dedup_tfidf_word_lr.joblib",
-        "tfidf_char_svm": ROOT / "models" / "sms_dedup_tfidf_char_svm.joblib",
-        "minilm_lr": ROOT / "models" / "sms_dedup_minilm_lr.joblib",
-        "tfidf_word_lr_augtrain": ROOT / "models" / "sms_dedup_aug_tfidf_word_lr.joblib",
+    # Define all datasets with their models
+    datasets_config = {
+        "sms_uci_dedup": {
+            "dir": sms_dir,
+            "prefix": "sms_dedup",
+        },
+        "spamassassin_dedup": {
+            "dir": spam_dir,
+            "prefix": "spamassassin_dedup",
+        },
+        "telegram_dedup": {
+            "dir": telegram_dir,
+            "prefix": "telegram_dedup",
+        },
     }
-    sms_texts, sms_labels = load_dataset(sms_dir)
-    for name, path in sms_models.items():
-        if path.exists():
-            f1, prec, rec, roc = eval_model(path, sms_texts, sms_labels)
-            rows.append({
-                "dataset": "sms_uci_dedup",
-                "split": "test",
-                "model": name,
-                "seed": "",
-                "f1": f1,
-                "precision": prec,
-                "recall": rec,
-                "roc_auc": roc,
-                "notes": "train=sms_uci_dedup in-domain",
-            })
 
-    spam_models = {
-        "tfidf_word_lr": ROOT / "models" / "spamassassin_dedup_tfidf_word_lr.joblib",
-        "tfidf_char_svm": ROOT / "models" / "spamassassin_dedup_tfidf_char_svm.joblib",
-        "minilm_lr": ROOT / "models" / "spamassassin_dedup_minilm_lr.joblib",
-        "tfidf_word_lr_augtrain": ROOT / "models" / "spamassassin_dedup_aug_tfidf_word_lr.joblib",
-    }
-    spam_texts, spam_labels = load_dataset(spam_dir)
-    for name, path in spam_models.items():
-        if path.exists():
-            f1, prec, rec, roc = eval_model(path, spam_texts, spam_labels)
-            rows.append({
-                "dataset": "spamassassin_dedup",
-                "split": "test",
-                "model": name,
-                "seed": "",
-                "f1": f1,
-                "precision": prec,
-                "recall": rec,
-                "roc_auc": roc,
-                "notes": "train=spamassassin_dedup in-domain",
-            })
+    model_types = ["tfidf_word_lr", "tfidf_char_svm", "minilm_lr", "tfidf_word_lr_augtrain"]
 
-    for name, path in sms_models.items():
-        if path.exists():
-            f1, prec, rec, roc = eval_model(path, spam_texts, spam_labels)
-            rows.append({
-                "dataset": "spamassassin_dedup",
-                "split": "test",
-                "model": name,
-                "seed": "",
-                "f1": f1,
-                "precision": prec,
-                "recall": rec,
-                "roc_auc": roc,
-                "notes": "train=sms_uci_dedup cross-domain",
-            })
+    # Build model paths for each dataset
+    def get_models(prefix):
+        return {
+            "tfidf_word_lr": ROOT / "models" / f"{prefix}_tfidf_word_lr.joblib",
+            "tfidf_char_svm": ROOT / "models" / f"{prefix}_tfidf_char_svm.joblib",
+            "minilm_lr": ROOT / "models" / f"{prefix}_minilm_lr.joblib",
+            "tfidf_word_lr_augtrain": ROOT / "models" / f"{prefix}_aug_tfidf_word_lr.joblib",
+        }
 
-    for name, path in spam_models.items():
-        if path.exists():
-            f1, prec, rec, roc = eval_model(path, sms_texts, sms_labels)
-            rows.append({
-                "dataset": "sms_uci_dedup",
-                "split": "test",
-                "model": name,
-                "seed": "",
-                "f1": f1,
-                "precision": prec,
-                "recall": rec,
-                "roc_auc": roc,
-                "notes": "train=spamassassin_dedup cross-domain",
-            })
+    sms_models = get_models("sms_dedup")
+    spam_models = get_models("spamassassin_dedup")
+    telegram_models = get_models("telegram_dedup")
+
+    # Load test sets for available datasets
+    datasets_available = {}
+    for ds_name, ds_config in datasets_config.items():
+        test_file = ds_config["dir"] / "test.csv"
+        if test_file.exists():
+            datasets_available[ds_name] = {
+                "dir": ds_config["dir"],
+                "prefix": ds_config["prefix"],
+                "texts": None,
+                "labels": None,
+                "models": get_models(ds_config["prefix"]),
+            }
+            texts, labels = load_dataset(ds_config["dir"])
+            datasets_available[ds_name]["texts"] = texts
+            datasets_available[ds_name]["labels"] = labels
+        else:
+            print(f"[WARN] Dataset {ds_name} not found at {test_file}")
+
+    # Evaluate all dataset combinations (in-domain + cross-domain)
+    all_model_prefixes = list(set(ds["prefix"] for ds in datasets_available.values()))
+    
+    for train_ds_name, train_ds in datasets_available.items():
+        train_models = train_ds["models"]
+        train_prefix = train_ds["prefix"]
+        
+        for test_ds_name, test_ds in datasets_available.items():
+            test_texts = test_ds["texts"]
+            test_labels = test_ds["labels"]
+            
+            is_cross = train_ds_name != test_ds_name
+            note_suffix = "cross-domain" if is_cross else "in-domain"
+            
+            for model_name, model_path in train_models.items():
+                if model_path.exists():
+                    try:
+                        f1, prec, rec, roc = eval_model(model_path, test_texts, test_labels)
+                        rows.append({
+                            "dataset": test_ds_name,
+                            "split": "test",
+                            "model": model_name,
+                            "seed": "",
+                            "f1": f1,
+                            "precision": prec,
+                            "recall": rec,
+                            "roc_auc": roc,
+                            "notes": f"train={train_ds_name} {note_suffix}",
+                        })
+                    except Exception as e:
+                        print(f"[ERROR] {model_path} on {test_ds_name}: {e}")
 
     # CORAL MiniLM domain alignment (in-domain + cross-domain)
     embed_name = "sentence-transformers/all-MiniLM-L6-v2"
     st = SentenceTransformer(embed_name)
 
-    # SMS -> SMS (in-domain, coral with same domain)
-    f1, prec, rec, roc = eval_coral(sms_dir, sms_dir, st)
-    rows.append({
-        "dataset": "sms_uci_dedup",
-        "split": "test",
-        "model": "minilm_lr_coral",
-        "seed": "",
-        "f1": f1,
-        "precision": prec,
-        "recall": rec,
-        "roc_auc": roc,
-        "notes": "train=sms_uci_dedup in-domain coral",
-    })
-
-    # SpamAssassin -> SpamAssassin (in-domain)
-    f1, prec, rec, roc = eval_coral(spam_dir, spam_dir, st)
-    rows.append({
-        "dataset": "spamassassin_dedup",
-        "split": "test",
-        "model": "minilm_lr_coral",
-        "seed": "",
-        "f1": f1,
-        "precision": prec,
-        "recall": rec,
-        "roc_auc": roc,
-        "notes": "train=spamassassin_dedup in-domain coral",
-    })
-
-    # SMS -> SpamAssassin (cross-domain)
-    f1, prec, rec, roc = eval_coral(sms_dir, spam_dir, st)
-    rows.append({
-        "dataset": "spamassassin_dedup",
-        "split": "test",
-        "model": "minilm_lr_coral",
-        "seed": "",
-        "f1": f1,
-        "precision": prec,
-        "recall": rec,
-        "roc_auc": roc,
-        "notes": "train=sms_uci_dedup cross-domain coral",
-    })
-
-    # SpamAssassin -> SMS (cross-domain)
-    f1, prec, rec, roc = eval_coral(spam_dir, sms_dir, st)
-    rows.append({
-        "dataset": "sms_uci_dedup",
-        "split": "test",
-        "model": "minilm_lr_coral",
-        "seed": "",
-        "f1": f1,
-        "precision": prec,
-        "recall": rec,
-        "roc_auc": roc,
-        "notes": "train=spamassassin_dedup cross-domain coral",
-    })
+    # Evaluate CORAL for all dataset combinations
+    for source_name, source_ds in datasets_available.items():
+        source_dir = source_ds["dir"]
+        for target_name, target_ds in datasets_available.items():
+            target_dir = target_ds["dir"]
+            is_cross = source_name != target_name
+            note_suffix = "cross-domain coral" if is_cross else "in-domain coral"
+            
+            try:
+                f1, prec, rec, roc = eval_coral(source_dir, target_dir, st)
+                rows.append({
+                    "dataset": target_name,
+                    "split": "test",
+                    "model": "minilm_lr_coral",
+                    "seed": "",
+                    "f1": f1,
+                    "precision": prec,
+                    "recall": rec,
+                    "roc_auc": roc,
+                    "notes": f"train={source_name} {note_suffix}",
+                })
+            except Exception as e:
+                print(f"[ERROR] CORAL {source_name}->{target_name}: {e}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", newline="") as f:
