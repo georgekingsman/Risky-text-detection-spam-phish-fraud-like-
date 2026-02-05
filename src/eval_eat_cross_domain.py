@@ -88,9 +88,9 @@ def main():
 
     # Dataset paths - now supporting 3 domains
     datasets = {
-        "sms": "data/sms_spam/dedup/processed",
-        "spamassassin": "data/spamassassin/dedup/processed",
-        "telegram": "data/telegram_spam_ham/dedup/processed",
+        "sms": "dataset/dedup/processed",
+        "spamassassin": "dataset/spamassassin/dedup/processed",
+        "telegram": "dataset/telegram_spam_ham/dedup/processed",
     }
     
     # Filter to only available datasets

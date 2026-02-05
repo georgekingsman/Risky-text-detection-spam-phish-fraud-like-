@@ -65,22 +65,27 @@ cross_domain_table:
 dedup:
 	$(PY) -m src.dedup_split --data-dir dataset/processed --out-dir dataset/dedup/processed --report results/dedup_report_sms.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
 	$(PY) -m src.dedup_split --data-dir dataset/spamassassin/processed --out-dir dataset/spamassassin/dedup/processed --report results/dedup_report_spamassassin.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
+	$(PY) -m src.dedup_split --data-dir dataset/telegram_spam_ham/processed --out-dir dataset/telegram_spam_ham/dedup/processed --report results/dedup_report_telegram.csv --text-col text --label-col label --seed 0 --near --h-thresh 3
 	$(PY) -m src.build_dedup_all --data-dir dataset/dedup/processed --out dataset/dedup/processed/all.csv
 	$(PY) -m src.build_dedup_all --data-dir dataset/spamassassin/dedup/processed --out dataset/spamassassin/dedup/processed/all.csv
+	$(PY) -m src.build_dedup_all --data-dir dataset/telegram_spam_ham/dedup/processed --out dataset/telegram_spam_ham/dedup/processed/all.csv
 
 dedup_train:
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/dedup/processed --prefix sms_dedup
 	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup
+	$(PY) -m src.train_baselines_on_dataset --data-dir dataset/telegram_spam_ham/dedup/processed --prefix telegram_dedup
 	$(PY) -m src.train_augtrain --data-dir dataset/dedup/processed --prefix sms_dedup --seed 0
 	$(PY) -m src.train_augtrain --data-dir dataset/spamassassin/dedup/processed --prefix spamassassin_dedup --seed 0
+	$(PY) -m src.train_augtrain --data-dir dataset/telegram_spam_ham/dedup/processed --prefix telegram_dedup --seed 0
 
 dedup_eval:
 	$(PY) -m src.build_results_dedup
 	$(PY) -m src.build_cross_domain_table --results results/results_dedup.csv --out results/cross_domain_table_dedup.csv
 
 dedup_robust:
-	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci_dedup --data-dir dataset/dedup/processed --defense normalize --include-baseline --model-glob "models/*dedup*.joblib" --out results/robustness_dedup_sms.csv
-	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin_dedup --data-dir dataset/spamassassin/dedup/processed --defense normalize --include-baseline --model-glob "models/*dedup*.joblib" --out results/robustness_dedup_spamassassin.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset sms_uci_dedup --data-dir dataset/dedup/processed --defense normalize --include-baseline --model-glob "models/sms_dedup*.joblib" --out results/robustness_dedup_sms.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset spamassassin_dedup --data-dir dataset/spamassassin/dedup/processed --defense normalize --include-baseline --model-glob "models/spamassassin_dedup*.joblib" --out results/robustness_dedup_spamassassin.csv
+	$(PY) -m src.robustness.run_robust_final --seed 42 --dataset telegram_dedup --data-dir dataset/telegram_spam_ham/dedup/processed --defense normalize --include-baseline --model-glob "models/telegram_dedup*.joblib" --out results/robustness_dedup_telegram.csv
 	$(PY) -m src.merge_robustness_dedup
 	$(PY) -m src.plot_robustness_delta_dedup
 	$(PY) -m src.compare_robustness_dedup

@@ -1,4 +1,4 @@
 domain_a,domain_b,jsd_char_3to5
-sms,spamassassin,0.19966080148736068
-sms,telegram,0.13871238429434957
-spamassassin,telegram,0.14537245854776798
+sms,spamassassin,0.549
+sms,telegram,0.427
+spamassassin,telegram,0.5078
