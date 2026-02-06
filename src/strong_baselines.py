@@ -40,9 +40,7 @@ MODELS = {
 }
 
 # Import attack functions
-import sys
-sys.path.insert(0, str(ROOT / "src"))
-from robustness.attacks import obfuscate_text, paraphrase_like, prompt_injection
+from src.robustness.perturb import obfuscate as obfuscate_text, simple_paraphrase_like as paraphrase_like, prompt_injection
 
 
 def load_data(dataset_path: Path):
